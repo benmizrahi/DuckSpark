@@ -1,0 +1,14 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package common;
+
+message HCReq {
+  string uuid = 1;
+}
+
+message HCRes {
+    string uuid = 1;
+    google.protobuf.Timestamp time = 2;
+  }
+  
