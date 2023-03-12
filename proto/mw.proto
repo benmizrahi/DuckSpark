@@ -1,7 +1,9 @@
 syntax = "proto3";
+option go_package = "/proto";
 import "google/protobuf/timestamp.proto";
 
 package common;
+
 
 message HCReq {
   string uuid = 1;
@@ -10,5 +12,5 @@ message HCReq {
 message HCRes {
     string uuid = 1;
     google.protobuf.Timestamp time = 2;
-  }
+}
   
