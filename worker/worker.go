@@ -17,11 +17,11 @@ type Worker struct {
 	Http        *gin.Engine
 }
 
-func NewWorker(master string) *Worker {
+func NewWorker(masterHost string, masterPort int) *Worker {
 	return &Worker{
 		Port:        9999,
 		MaxParallel: 10,
-		Master:      `http://` + master + `:9991/api`,
+		Master:      `http://` + masterHost + `:` + string(rune(masterPort)) + `/api`,
 		Http:        gin.Default(),
 	}
 }
