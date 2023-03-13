@@ -1,8 +1,17 @@
 syntax = "proto3";
-option go_package = "/proto";
+option go_package = "/protos";
 import "google/protobuf/timestamp.proto";
 
-package common;
+package protos;
+
+
+message RegisterReq {
+  string uuid = 1;
+}
+
+message RegisterRes {
+  bool ok = 1;
+}
 
 
 message HCReq {

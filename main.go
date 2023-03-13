@@ -3,21 +3,22 @@ package main
 import (
 	"flag"
 
-	"github.com/benmizrahi/godistodist/master"
-	"github.com/benmizrahi/godistodist/worker"
+	"github.com/benmizrahi/godist/master"
+	"github.com/benmizrahi/godist/worker"
 )
 
 func main() {
 
-	typeOf := *flag.String("TypeOf", "Worker", "# Type of instance Master/Worker")
-	isLocal := *flag.Bool("TypeOf", true, "# Run locally with processes K8S/Local")
-	masterHost := *flag.String("MasterHost", "localhost", "# Where the master is hosted")
-	masterPort := *flag.Int("MasterPort", 9999, "# Where the master port")
+	typeOf := flag.String("type", "Worker", "# Type of instance Master/Worker")
+	host := flag.String("host", "localhost", "# Host to listen")
+	port := flag.Int("port", 9999, "#port to listen")
+	isLocal := flag.Bool("isLocal", true, "# Run locally with processes K8S/Local")
+	flag.Parse()
 
-	switch typeOf {
+	switch *typeOf {
 	case "Master":
-		master.NewMaster(isLocal).Init()
+		master.NewMaster(*isLocal, *host, *port).Init()
 	default:
-		worker.NewWorker(masterHost, masterPort).Init()
+		worker.NewWorker(*host, *port).Init()
 	}
 }
