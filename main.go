@@ -12,6 +12,7 @@ func main() {
 	typeOf := flag.String("type", "Worker", "# Type of instance Master/Worker")
 	host := flag.String("host", "localhost", "# Host to listen")
 	port := flag.Int("port", 9999, "#port to listen")
+	masterPath := flag.String("master", "localhost", "# Master host")
 	isLocal := flag.Bool("isLocal", true, "# Run locally with processes K8S/Local")
 	flag.Parse()
 
@@ -19,6 +20,6 @@ func main() {
 	case "Master":
 		master.NewMaster(*isLocal, *host, *port).Init()
 	default:
-		worker.NewWorker(*host, *port).Init()
+		worker.NewWorker(*host, *port, *masterPath).Init()
 	}
 }

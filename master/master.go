@@ -29,9 +29,11 @@ func (w *Master) RegisterHandler(c *gin.Context) {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	c.ProtoBuf(http.StatusOK, protos.RegisterRes{
+	data := &protos.RegisterRes{
 		Ok: true,
-	})
+	}
+
+	c.ProtoBuf(http.StatusOK, data)
 }
 
 func NewMaster(isLocal bool, host string, port int) *Master {

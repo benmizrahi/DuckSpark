@@ -1,8 +1,12 @@
 package worker
 
 import (
+	"bytes"
+	"log"
 	"net/http"
+	"strconv"
 
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/benmizrahi/godist/protos"
@@ -18,13 +22,24 @@ type Worker struct {
 	Http        *gin.Engine
 }
 
-func NewWorker(host string, port int) *Worker {
+func NewWorker(host string, port int, masterPath string) *Worker {
 	return &Worker{
 		MaxParallel: 10,
-		Master:      "",
+		Master:      "http://" + masterPath,
 		Http:        gin.Default(),
 		Host:        host,
 		Port:        port,
+	}
+}
+
+func (w *Worker) registerToMaster() {
+	req := &protos.RegisterReq{
+		Uuid: "1",
+	}
+	body, err := proto.Marshal(req)
+	_, err = http.Post(w.Master+"/api/register", "application/protobuf", bytes.NewReader(body))
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -37,9 +52,8 @@ func (w *Worker) healthCheck(c *gin.Context) {
 }
 
 func (w *Worker) Init() {
-	w.Http.GET("/api/v1/health", w.healthCheck)
-	w.Http.Run(":" + string(rune(w.Port)))
-}
 
-func (w *Worker) Stop() {
+	w.registerToMaster()
+	w.Http.GET("/api/v1/health", w.healthCheck)
+	w.Http.Run(w.Host + ":" + strconv.Itoa(w.Port))
 }
