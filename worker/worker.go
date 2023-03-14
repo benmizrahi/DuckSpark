@@ -24,7 +24,8 @@ type Worker struct {
 }
 
 func NewWorker(host string, port int, masterPath string) *Worker {
-	return &Worker{
+
+	w := &Worker{
 		ID:          (uuid.New()).String(),
 		MaxParallel: 10,
 		Master:      "http://" + masterPath,
@@ -32,6 +33,12 @@ func NewWorker(host string, port int, masterPath string) *Worker {
 		Host:        host,
 		Port:        port,
 	}
+
+	w.registerToMaster()
+	w.Http.GET("/api/v1/health", w.healthCheck)
+	w.Http.Run(w.Host + ":" + strconv.Itoa(w.Port))
+
+	return w
 }
 
 func (w *Worker) registerToMaster() {
@@ -46,16 +53,9 @@ func (w *Worker) registerToMaster() {
 }
 
 func (w *Worker) healthCheck(c *gin.Context) {
-	res := &protos.HCRes{ 
+	res := &protos.HCRes{
 		Uuid: uuid.New().String(),
 		Time: timestamppb.Now(),
 	}
 	c.ProtoBuf(http.StatusOK, res)
-}
-
-func (w *Worker) Init() {
-
-	w.registerToMaster()
-	w.Http.GET("/api/v1/health", w.healthCheck)
-	w.Http.Run(w.Host + ":" + strconv.Itoa(w.Port))
 }

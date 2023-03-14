@@ -9,15 +9,7 @@
             "name": "Master",
             "type": "go",
             "request": "launch",
-            "args":["--type=Master", "--host=localhost","--port=9999"],
-            "mode": "debug",
-            "program": "${workspaceFolder}/main.go"
-        },
-        {
-            "name": "Worker1",
-            "type": "go",
-            "request": "launch",
-            "args":["--type=Worker", "--host=localhost","--port=9998","--master=localhost:9999"],
+            "args":["--host=localhost","--port=9999"],
             "mode": "debug",
             "program": "${workspaceFolder}/main.go"
         }
