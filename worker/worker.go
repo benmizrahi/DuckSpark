@@ -15,6 +15,7 @@ import (
 )
 
 type Worker struct {
+	ID          string
 	MaxParallel int
 	Master      string
 	Host        string
@@ -24,6 +25,7 @@ type Worker struct {
 
 func NewWorker(host string, port int, masterPath string) *Worker {
 	return &Worker{
+		ID:          (uuid.New()).String(),
 		MaxParallel: 10,
 		Master:      "http://" + masterPath,
 		Http:        gin.Default(),
@@ -34,7 +36,7 @@ func NewWorker(host string, port int, masterPath string) *Worker {
 
 func (w *Worker) registerToMaster() {
 	req := &protos.RegisterReq{
-		Uuid: "1",
+		Uuid: w.ID,
 	}
 	body, err := proto.Marshal(req)
 	_, err = http.Post(w.Master+"/api/register", "application/protobuf", bytes.NewReader(body))
@@ -44,7 +46,7 @@ func (w *Worker) registerToMaster() {
 }
 
 func (w *Worker) healthCheck(c *gin.Context) {
-	res := &protos.HCRes{
+	res := &protos.HCRes{ 
 		Uuid: uuid.New().String(),
 		Time: timestamppb.Now(),
 	}
