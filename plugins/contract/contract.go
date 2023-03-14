@@ -1,6 +1,8 @@
 package contract
 
-type IDistrbution struct{}
+type IDistrbution struct {
+	dynamic any
+}
 
 type ITask struct{}
 
@@ -13,5 +15,5 @@ type IPluginContract interface {
 	//worker method
 	Distrbute(dist IDistrbution, task ITask) ITaskResult
 
-	Configs(map[string]string)
+	Configs(map[string]string) IPluginContract
 }

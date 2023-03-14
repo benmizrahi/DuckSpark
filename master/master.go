@@ -27,7 +27,7 @@ var masterInstance *Master
 type Master struct {
 	IsLocal    bool
 	Workers    map[string]string
-	Plugins    map[string]contract.IPluginContract
+	Plugins    map[string]func() contract.IPluginContract
 	MasterPath string
 	context    *Context
 	Http       *gin.Engine
@@ -41,7 +41,7 @@ func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 		w := &Master{
 			IsLocal:    isLocal,
 			Workers:    map[string]string{},
-			Plugins:    map[string]contract.IPluginContract{},
+			Plugins:    map[string]func() contract.IPluginContract{},
 			MasterPath: host + ":" + strconv.Itoa(port),
 			Http:       gin.New(),
 		}
@@ -79,9 +79,9 @@ func (w *Master) handleWorkers(minWorkers int, isLocal bool, masterPath string) 
 }
 
 func (w *Master) loadBuildInPlugins() {
-	for _, plugin := range plugins.MakeBuildIns() {
-		w.Plugins[plugin.Name()] = plugin
-		log.Info("GoDist Master, plugin loaded ", plugin.Name())
+	for key, plugin := range plugins.MakeBuildIns() {
+		w.Plugins[key] = plugin
+		log.Info("GoDist Master, plugin loaded ", key)
 	}
 }
 
@@ -102,10 +102,6 @@ func (w *Master) registerHandler(c *gin.Context) {
 	}
 
 	c.ProtoBuf(http.StatusOK, data)
-}
-
-func (w *Master) LoadPlugin(plugin contract.IPluginContract) {
-	w.Plugins[plugin.Name()] = plugin
 }
 
 func (w *Master) Context() *Context {

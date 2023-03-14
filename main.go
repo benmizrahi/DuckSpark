@@ -13,17 +13,17 @@ func main() {
 	port := flag.Int("port", 9999, "#port to listen")
 	isLocal := flag.Bool("isLocal", true, "# Run locally with processes K8S/Local")
 	flag.Parse()
-
 	log.Info("GoDist Status: Starting")
 	godist := master.NewMaster(*isLocal, *host, *port, 2)
 
 	log.Info("******************")
-	log.Info("Status: Read!")
+	log.Info("Status: Ready!")
 	log.Info("your wish is my command... lets GO!!")
 	log.Info("******************")
 
-	godist.Context().
-		Extract("godist-fsplugin", map[string]string{"source": ".extra/data/"}).
+	godist.
+		Context().
+		Extract("fsplugin", map[string]string{"path": ".extra/data/", "format": "csv"}).
 		Transform("").
 		Load("")
 }
