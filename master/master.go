@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/benmizrahi/godist/plugins"
+	"github.com/benmizrahi/godist/plugins/contract"
 	"github.com/benmizrahi/godist/protos"
 	"github.com/benmizrahi/godist/worker"
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,7 @@ var masterInstance *Master
 type Master struct {
 	IsLocal    bool
 	Workers    map[string]string
-	Plugins    map[string]plugins.IPluginContract
+	Plugins    map[string]contract.IPluginContract
 	MasterPath string
 	context    *Context
 	Http       *gin.Engine
@@ -40,7 +41,7 @@ func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 		w := &Master{
 			IsLocal:    isLocal,
 			Workers:    map[string]string{},
-			Plugins:    map[string]plugins.IPluginContract{},
+			Plugins:    map[string]contract.IPluginContract{},
 			MasterPath: host + ":" + strconv.Itoa(port),
 			Http:       gin.New(),
 		}
@@ -50,7 +51,11 @@ func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 		go w.Http.Run(w.MasterPath)
 		log.Info("GoDist Master, master is listening on ", w.MasterPath)
 
-		handleWorkers(minWorkers, isLocal, w.MasterPath)
+		//load all internal plugins
+		w.loadBuildInPlugins()
+
+		//start all workers
+		w.handleWorkers(minWorkers, isLocal, w.MasterPath)
 
 		for len(w.Workers) != minWorkers {
 			log.Info("GoDist Master, wating for %d workers to register..", minWorkers)
@@ -63,13 +68,20 @@ func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 	return masterInstance
 }
 
-func handleWorkers(minWorkers int, isLocal bool, masterPath string) {
+func (w *Master) handleWorkers(minWorkers int, isLocal bool, masterPath string) {
 	if isLocal {
 		for i := 0; i < minWorkers; i++ {
 			worker.NewWorker("localhost", 999+i, masterPath)
 		}
 	} else {
 		//TODO: implement GKE based orchstrations
+	}
+}
+
+func (w *Master) loadBuildInPlugins() {
+	for _, plugin := range plugins.MakeBuildIns() {
+		w.Plugins[plugin.Name()] = plugin
+		log.Info("GoDist Master, plugin loaded ", plugin.Name())
 	}
 }
 
@@ -92,7 +104,7 @@ func (w *Master) registerHandler(c *gin.Context) {
 	c.ProtoBuf(http.StatusOK, data)
 }
 
-func (w *Master) LoadPlugin(plugin plugins.IPluginContract) {
+func (w *Master) LoadPlugin(plugin contract.IPluginContract) {
 	w.Plugins[plugin.Name()] = plugin
 }
 

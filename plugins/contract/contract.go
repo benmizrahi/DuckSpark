@@ -1,4 +1,4 @@
-package plugins
+package contract
 
 type IDistrbution struct{}
 
@@ -9,7 +9,9 @@ type ITaskResult struct{}
 type IPluginContract interface {
 	Name() string
 	//master
-	Plan() []IDistrbution
+	PlanRead() []IDistrbution
 	//worker method
 	Distrbute(dist IDistrbution, task ITask) ITaskResult
+
+	Configs(map[string]string)
 }

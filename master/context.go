@@ -10,7 +10,8 @@ func NewContext(master *Master) *Context {
 	}
 }
 
-func (c *Context) Extract(job string) *Context {
+func (c *Context) Extract(from string, config map[string]string) *Context {
+	c.session.Plugins[from].Configs(config)
 	return c
 }
 
