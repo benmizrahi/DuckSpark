@@ -2,9 +2,9 @@ package master
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/benmizrahi/godist/plugins"
@@ -12,7 +12,16 @@ import (
 	"github.com/benmizrahi/godist/worker"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
+	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+	ginlogrus "github.com/toorop/gin-logrus"
 )
+
+// singeltone instance of master!
+var lock = &sync.Mutex{}
+
+// Singel instance
+var masterInstance *Master
 
 type Master struct {
 	IsLocal    bool
@@ -23,6 +32,37 @@ type Master struct {
 	Http       *gin.Engine
 }
 
+func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
+	if masterInstance == nil {
+		lock.Lock()
+		defer lock.Unlock()
+		log.Info("GoDist Master, Creating new master instance")
+		w := &Master{
+			IsLocal:    isLocal,
+			Workers:    map[string]string{},
+			Plugins:    map[string]plugins.IPluginContract{},
+			MasterPath: host + ":" + strconv.Itoa(port),
+			Http:       gin.New(),
+		}
+
+		w.Http.Use(ginlogrus.Logger(logrus.New()), gin.Recovery())
+		w.Http.POST("/api/register", w.registerHandler)
+		go w.Http.Run(w.MasterPath)
+		log.Info("GoDist Master, master is listening on ", w.MasterPath)
+
+		handleWorkers(minWorkers, isLocal, w.MasterPath)
+
+		for len(w.Workers) != minWorkers {
+			log.Info("GoDist Master, wating for %d workers to register..", minWorkers)
+			time.Sleep(1 * time.Second)
+		}
+
+		log.Info("GoDist Master, all workers are ready")
+		return w
+	}
+	return masterInstance
+}
+
 func handleWorkers(minWorkers int, isLocal bool, masterPath string) {
 	if isLocal {
 		for i := 0; i < minWorkers; i++ {
@@ -31,27 +71,6 @@ func handleWorkers(minWorkers int, isLocal bool, masterPath string) {
 	} else {
 		//TODO: implement GKE based orchstrations
 	}
-}
-
-func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
-	w := &Master{
-		IsLocal:    isLocal,
-		Workers:    map[string]string{},
-		Plugins:    map[string]plugins.IPluginContract{},
-		MasterPath: host + ":" + strconv.Itoa(port),
-		Http:       gin.New(),
-	}
-
-	w.Http.POST("/api/register", w.registerHandler)
-	go w.Http.Run(w.MasterPath)
-
-	handleWorkers(minWorkers, isLocal, w.MasterPath)
-
-	for len(w.Workers) != minWorkers {
-		time.Sleep(1 * time.Second)
-	}
-
-	return w
 }
 
 func (w *Master) registerHandler(c *gin.Context) {
@@ -79,7 +98,8 @@ func (w *Master) LoadPlugin(plugin plugins.IPluginContract) {
 
 func (w *Master) Context() *Context {
 	if w.context == nil {
-		//TODO make it thread-safe
+		lock.Lock()
+		defer lock.Unlock()
 		w.context = NewContext(w)
 	}
 	return w.context

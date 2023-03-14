@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/benmizrahi/godist/master"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -13,7 +14,15 @@ func main() {
 	isLocal := flag.Bool("isLocal", true, "# Run locally with processes K8S/Local")
 	flag.Parse()
 
+	log.Info("GoDist Status: Starting")
 	sc := master.NewMaster(*isLocal, *host, *port, 2).Context()
+
+	log.Info("******************")
+	log.Info("******************")
+	log.Info("Status: Read!")
+	log.Info("your wish is my command.. lets GO!!")
+	log.Info("******************")
+	log.Info("******************")
 	sc.
 		Extract("").
 		Transform("").
