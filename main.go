@@ -20,7 +20,7 @@ func main() {
 	log.Info("******************")
 	log.Info("******************")
 	log.Info("Status: Read!")
-	log.Info("your wish is my command.. lets GO!!")
+	log.Info("your wish is my command... lets GO!!")
 	log.Info("******************")
 	log.Info("******************")
 	sc.
