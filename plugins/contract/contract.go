@@ -1,19 +1,15 @@
 package contract
 
-type IDistrbution struct {
-	dynamic any
+import "github.com/benmizrahi/godist/protos"
+
+type IPartition struct {
+	Tasks []*protos.Task
 }
-
-type ITask struct{}
-
-type ITaskResult struct{}
-
 type IPluginContract interface {
+	//Plugin Name
 	Name() string
-	//master
-	PlanRead() []IDistrbution
-	//worker method
-	Distrbute(dist IDistrbution, task ITask) ITaskResult
-
+	//Master Read planning
+	PlanRead() []IPartition
+	//set configs
 	Configs(map[string]string) IPluginContract
 }

@@ -23,7 +23,7 @@ func main() {
 
 	godist.
 		Context().
-		Extract("fsplugin", map[string]string{"path": ".extra/data/", "format": "csv"}).
-		Transform("").
-		Load("")
+		Extract("fsplugin", map[string]string{"path": ".extra/data/", "format": "csv", "parallelism": "5"}).
+		// Transform("").
+		Show()
 }

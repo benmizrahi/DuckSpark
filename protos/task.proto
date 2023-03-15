@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = "/protos";
+import "google/protobuf/timestamp.proto";
+package protos;
+
+
+message Task {
+    string uuid = 1;
+    repeated string instactions = 2;
+    google.protobuf.Timestamp creationTime = 3;
+}
+  
+message TaskResult {
+    string uuid = 1;
+    bool status = 2;
+    google.protobuf.Timestamp endTime = 3;
+}
