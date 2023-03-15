@@ -4,6 +4,11 @@ import "google/protobuf/timestamp.proto";
 package protos;
 
 
+message IPartition {
+    string uuid = 1;
+    repeated Task Tasks = 2
+}
+
 message Task {
     string uuid = 1;
     repeated string instactions = 2;

@@ -3,6 +3,7 @@ package master
 import (
 	"io"
 	"net/http"
+	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -102,6 +103,24 @@ func (w *Master) registerHandler(c *gin.Context) {
 	}
 
 	c.ProtoBuf(http.StatusOK, data)
+}
+
+func (w *Master) sendAyncTaskToWorker(worker string, partition contract.IPartition) {
+	body, err := proto.Marshal(partition.Tasks)
+
+}
+
+func (w *Master) DoAction(plan []contract.IPartition) bool {
+	//TODO publish actions to workers
+
+	keys := reflect.ValueOf(w.Workers).MapKeys()
+	for index, partition := range plan {
+		num := index % len(keys)
+		worker := w.Workers[keys[num].String()]
+		go w.sendAyncTaskToWorker(worker, partition)
+	}
+
+	return false
 }
 
 func (w *Master) Context() *Context {

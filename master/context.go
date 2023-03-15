@@ -43,5 +43,7 @@ func (c *Context) Show() *Context {
 			CreationTime: timestamppb.Now(),
 		})
 	}
+
+	c.session.DoAction(c.plan)
 	return c
 }

@@ -1,10 +1,5 @@
 package contract
 
-import "github.com/benmizrahi/godist/protos"
-
-type IPartition struct {
-	Tasks []*protos.Task
-}
 type IPluginContract interface {
 	//Plugin Name
 	Name() string
