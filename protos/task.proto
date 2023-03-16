@@ -14,6 +14,14 @@ message Task {
     repeated string instactions = 2;
     google.protobuf.Timestamp creationTime = 3;
 }
+
+  
+message IPartitionResult {
+    string uuid = 1;
+    repeated TaskResult taskResults = 2;
+    google.protobuf.Timestamp endTime = 3;
+}
+
   
 message TaskResult {
     string uuid = 1;

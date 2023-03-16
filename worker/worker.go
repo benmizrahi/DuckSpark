@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/benmizrahi/godist/protos"
 	"github.com/gin-gonic/gin"
@@ -36,6 +35,7 @@ func NewWorker(host string, port int, masterPath string) *Worker {
 
 	w.registerToMaster()
 	w.Http.GET("/api/v1/health", w.healthCheck)
+	w.Http.POST("/api/v1/tasks", w.tasksHandler)
 	w.Http.Run(w.Host + ":" + strconv.Itoa(w.Port))
 
 	return w
@@ -50,12 +50,4 @@ func (w *Worker) registerToMaster() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func (w *Worker) healthCheck(c *gin.Context) {
-	res := &protos.HCRes{
-		Uuid: uuid.New().String(),
-		Time: timestamppb.Now(),
-	}
-	c.ProtoBuf(http.StatusOK, res)
 }

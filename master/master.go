@@ -1,6 +1,7 @@
 package master
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"reflect"
@@ -86,39 +87,42 @@ func (w *Master) loadBuildInPlugins() {
 	}
 }
 
-func (w *Master) registerHandler(c *gin.Context) {
-	buf, err := io.ReadAll(c.Request.Body)
+func (w *Master) sendAyncTaskToWorker(worker string, partition *protos.IPartition) *protos.IPartitionResult {
+	body, err := proto.Marshal(partition)
 	if err != nil {
-		log.Fatalln("Failed to parse register request:", err)
+		log.Fatal("error:", err)
 	}
-	req := &protos.RegisterReq{}
-	if err := proto.Unmarshal(buf, req); err != nil {
-		log.Fatalln("Failed to parse register request:", err)
+	res, err := http.Post(worker+"/api/v1/tasks", "application/protobuf", bytes.NewReader(body))
+	if err != nil {
+		log.Fatal(err)
+	}
+	buf, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	result := protos.IPartitionResult{}
+	err = proto.Unmarshal(buf, &result)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	w.Workers[req.Uuid] = req.Uuid
-
-	data := &protos.RegisterRes{
-		Ok: true,
-	}
-
-	c.ProtoBuf(http.StatusOK, data)
+	return &result
 }
 
-func (w *Master) sendAyncTaskToWorker(worker string, partition contract.IPartition) {
-	body, err := proto.Marshal(partition.Tasks)
-
-}
-
-func (w *Master) DoAction(plan []contract.IPartition) bool {
+func (w *Master) DoAction(plan []protos.IPartition) bool {
 	//TODO publish actions to workers
-
+	var wg sync.WaitGroup
 	keys := reflect.ValueOf(w.Workers).MapKeys()
 	for index, partition := range plan {
+		wg.Add(1)
 		num := index % len(keys)
 		worker := w.Workers[keys[num].String()]
-		go w.sendAyncTaskToWorker(worker, partition)
+		go func(master *Master, w string, p protos.IPartition, wg sync.WaitGroup) {
+			master.sendAyncTaskToWorker(w, &p)
+			defer wg.Done()
+		}(w, worker, partition, wg)
 	}
+	wg.Wait()
 
 	return false
 }

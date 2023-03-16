@@ -10,7 +10,7 @@ import (
 type Context struct {
 	session *Master
 	plugins map[string]contract.IPluginContract
-	plan    []contract.IPartition
+	plan    []protos.IPartition
 }
 
 func NewContext(master *Master) *Context {
