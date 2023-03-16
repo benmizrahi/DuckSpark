@@ -7,6 +7,7 @@ package protos;
 
 message RegisterReq {
   string uuid = 1;
+  string http = 2;
 }
 
 message RegisterRes {

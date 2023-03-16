@@ -4,13 +4,14 @@ import (
 	"github.com/benmizrahi/godist/plugins/contract"
 	"github.com/benmizrahi/godist/protos"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Context struct {
 	session *Master
 	plugins map[string]contract.IPluginContract
-	plan    []protos.IPartition
+	plan    []*protos.IPartition
 }
 
 func NewContext(master *Master) *Context {
@@ -44,6 +45,9 @@ func (c *Context) Show() *Context {
 		})
 	}
 
-	c.session.DoAction(c.plan)
+	planResults := c.session.DoAction(c.plan)
+	for _, res := range planResults {
+		logrus.Info(res.TaskResults)
+	}
 	return c
 }

@@ -36,7 +36,7 @@ func (p FSPlugin) Name() string {
 }
 
 // Plan implements plugins.IPluginContract
-func (p FSPlugin) PlanRead() []protos.IPartition {
+func (p FSPlugin) PlanRead() []*protos.IPartition {
 	files, err := ioutil.ReadDir(p.Path)
 	if err != nil {
 		log.Fatal(err)
@@ -46,15 +46,16 @@ func (p FSPlugin) PlanRead() []protos.IPartition {
 		tasks = append(tasks, &protos.Task{
 			Uuid:         uuid.New().String(),
 			Instactions:  []string{"read", p.Path + file.Name()},
+			Plugin:       p.Name(),
 			CreationTime: timestamppb.Now(),
 		})
 	}
 
 	sliced := common.ChunkSlice(tasks, p.Parallelism)
-	distribution := []protos.IPartition{}
+	distribution := []*protos.IPartition{}
 
 	for _, tasks := range sliced {
-		distribution = append(distribution, protos.IPartition{Tasks: tasks})
+		distribution = append(distribution, &protos.IPartition{Tasks: tasks})
 	}
 
 	return distribution

@@ -6,4 +6,4 @@
 
 
 
-```protoc --go_out=. .protos/*.proto```
+```protoc --go_out=. protos/*.proto```

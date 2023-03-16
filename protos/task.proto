@@ -6,13 +6,14 @@ package protos;
 
 message IPartition {
     string uuid = 1;
-    repeated Task Tasks = 2
+    repeated Task Tasks = 2;
 }
 
 message Task {
     string uuid = 1;
-    repeated string instactions = 2;
-    google.protobuf.Timestamp creationTime = 3;
+    string plugin = 2;
+    repeated string instactions = 3;
+    google.protobuf.Timestamp creationTime = 4;
 }
 
   
@@ -26,5 +27,10 @@ message IPartitionResult {
 message TaskResult {
     string uuid = 1;
     bool status = 2;
-    google.protobuf.Timestamp endTime = 3;
+    repeated DataRow data = 3;
+    google.protobuf.Timestamp endTime = 4;
+}
+
+message DataRow {
+    repeated string data = 1 ;
 }

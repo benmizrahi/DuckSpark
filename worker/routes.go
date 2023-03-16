@@ -34,7 +34,7 @@ func (w *Worker) tasksHandler(c *gin.Context) {
 	//TODO: work
 	//
 
-	res := protos.IPartitionResult{
+	res := &protos.IPartitionResult{
 		TaskResults: []*protos.TaskResult{},
 	}
 

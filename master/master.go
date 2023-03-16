@@ -73,7 +73,7 @@ func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 func (w *Master) handleWorkers(minWorkers int, isLocal bool, masterPath string) {
 	if isLocal {
 		for i := 0; i < minWorkers; i++ {
-			worker.NewWorker("localhost", 999+i, masterPath)
+			worker.NewWorker("localhost", 8080+i, masterPath)
 		}
 	} else {
 		//TODO: implement GKE based orchstrations
@@ -109,22 +109,24 @@ func (w *Master) sendAyncTaskToWorker(worker string, partition *protos.IPartitio
 	return &result
 }
 
-func (w *Master) DoAction(plan []protos.IPartition) bool {
+func (w *Master) DoAction(plan []*protos.IPartition) []*protos.IPartitionResult {
 	//TODO publish actions to workers
 	var wg sync.WaitGroup
+
+	allPartitionResults := []*protos.IPartitionResult{}
 	keys := reflect.ValueOf(w.Workers).MapKeys()
 	for index, partition := range plan {
 		wg.Add(1)
 		num := index % len(keys)
 		worker := w.Workers[keys[num].String()]
-		go func(master *Master, w string, p protos.IPartition, wg sync.WaitGroup) {
-			master.sendAyncTaskToWorker(w, &p)
+		go func() {
 			defer wg.Done()
-		}(w, worker, partition, wg)
+			allPartitionResults = append(allPartitionResults, w.sendAyncTaskToWorker(worker, partition))
+		}()
 	}
 	wg.Wait()
 
-	return false
+	return allPartitionResults
 }
 
 func (w *Master) Context() *Context {

@@ -20,7 +20,7 @@ func (w *Master) registerHandler(c *gin.Context) {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	w.Workers[req.Uuid] = req.Uuid
+	w.Workers[req.Uuid] = req.Http
 
 	data := &protos.RegisterRes{
 		Ok: true,
