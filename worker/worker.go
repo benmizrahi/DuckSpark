@@ -8,6 +8,8 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
+	"github.com/benmizrahi/godist/plugins"
+	"github.com/benmizrahi/godist/plugins/contract"
 	"github.com/benmizrahi/godist/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,6 +22,7 @@ type Worker struct {
 	Master      string
 	Host        string
 	Port        int
+	Plugins     map[string]func() contract.IPluginContract
 	Http        *gin.Engine
 }
 
@@ -32,6 +35,7 @@ func NewWorker(host string, port int, masterPath string) *Worker {
 		Http:        gin.Default(),
 		Host:        host,
 		Port:        port,
+		Plugins:     map[string]func() contract.IPluginContract{},
 	}
 
 	w.registerToMaster()
@@ -40,6 +44,13 @@ func NewWorker(host string, port int, masterPath string) *Worker {
 	go w.Http.Run(w.Host + ":" + strconv.Itoa(w.Port))
 	logrus.Info("worker %s is listening at %s", w.ID, w.Host+":"+strconv.Itoa(w.Port))
 	return w
+}
+
+func (w *Worker) loadBuildInPlugins() {
+	for key, plugin := range plugins.MakeBuildIns() {
+		w.Plugins[key] = plugin
+		logrus.Info("GoDist Worker, plugin loaded ", key)
+	}
 }
 
 func (w *Worker) registerToMaster() {
