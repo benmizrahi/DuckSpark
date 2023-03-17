@@ -40,7 +40,7 @@ func (c *Context) Show() *Context {
 	for _, partition := range c.plan {
 		partition.Tasks = append(partition.Tasks, &protos.Task{
 			Uuid:         uuid.New().String(),
-			Instactions:  []string{"println"},
+			Instactions:  []string{protos.TAKE, protos.LIMIT},
 			CreationTime: timestamppb.Now(),
 		})
 	}
