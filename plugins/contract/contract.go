@@ -9,4 +9,6 @@ type IPluginContract interface {
 	PlanRead() []*protos.IPartition
 	//set configs
 	Configs(map[string]string) IPluginContract
+
+	Execute(*protos.Task) *protos.TaskResult
 }

@@ -22,7 +22,7 @@ type Worker struct {
 	Master      string
 	Host        string
 	Port        int
-	Plugins     map[string]func() contract.IPluginContract
+	Plugins     map[string]contract.IPluginContract
 	Http        *gin.Engine
 }
 
@@ -35,10 +35,11 @@ func NewWorker(host string, port int, masterPath string) *Worker {
 		Http:        gin.Default(),
 		Host:        host,
 		Port:        port,
-		Plugins:     map[string]func() contract.IPluginContract{},
+		Plugins:     map[string]contract.IPluginContract{},
 	}
 
 	w.registerToMaster()
+	w.loadBuildInPlugins()
 	w.Http.GET("/api/v1/health", w.healthCheck)
 	w.Http.POST("/api/v1/tasks", w.tasksHandler)
 	go w.Http.Run(w.Host + ":" + strconv.Itoa(w.Port))
@@ -48,7 +49,7 @@ func NewWorker(host string, port int, masterPath string) *Worker {
 
 func (w *Worker) loadBuildInPlugins() {
 	for key, plugin := range plugins.MakeBuildIns() {
-		w.Plugins[key] = plugin
+		w.Plugins[key] = plugin()
 		logrus.Info("GoDist Worker, plugin loaded ", key)
 	}
 }

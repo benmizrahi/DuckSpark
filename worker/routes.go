@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/benmizrahi/godist/protos"
+	"github.com/benmizrahi/godist/worker/buildins"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
@@ -31,19 +32,16 @@ func (w *Worker) tasksHandler(c *gin.Context) {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	//TODO: work
-	//
-
 	res := &protos.IPartitionResult{
 		TaskResults: []*protos.TaskResult{},
 	}
 
 	for _, task := range req.Tasks {
-		res.TaskResults = append(res.TaskResults, &protos.TaskResult{
-			Uuid:    task.Uuid,
-			Status:  true,
-			EndTime: timestamppb.Now(),
-		})
+		if task.Plugin != "" {
+			res.TaskResults = append(res.TaskResults, w.Plugins[task.Plugin].Execute(task))
+		}
+
+		res.TaskResults = append(res.TaskResults, buildins.MakeInstactions(task))
 	}
 
 	res.EndTime = timestamppb.Now()

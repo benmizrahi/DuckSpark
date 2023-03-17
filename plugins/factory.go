@@ -7,9 +7,7 @@ import (
 
 func MakeBuildIns() map[string]func() contract.IPluginContract {
 	mapOfPlugins := map[string]func() contract.IPluginContract{}
-
 	//map all internal
 	mapOfPlugins["fsplugin"] = impl.NewFSPlugin
-
 	return mapOfPlugins
 }
