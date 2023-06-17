@@ -8,9 +8,9 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/benmizrahi/godist/plugins"
-	"github.com/benmizrahi/godist/plugins/contract"
-	"github.com/benmizrahi/godist/protos"
+	"github.com/benmizrahi/godist/internal/plugins"
+	"github.com/benmizrahi/godist/internal/plugins/contract"
+	"github.com/benmizrahi/godist/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"

@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/benmizrahi/godist/master"
+	"github.com/benmizrahi/godist/internal/master"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,16 +13,15 @@ func main() {
 	port := flag.Int("port", 9999, "#port to listen")
 	isLocal := flag.Bool("isLocal", true, "# Run locally with processes K8S/Local")
 	flag.Parse()
-	log.Info("GoDist Status: Starting")
-	godist := master.NewMaster(*isLocal, *host, *port, 2)
 
+	log.Info("Godist Status: Starting")
 	log.Info("******************")
 	log.Info("Status: Ready!")
 	log.Info("your wish is my command... lets GO!!")
 	log.Info("******************")
 
-	godist.
-		Context().
-		Extract("fsplugin", map[string]string{"path": ".extra/data/", "format": "csv", "parallelism": "5"}).
+	master.
+		NewMaster(*isLocal, *host, *port, 2).
+		Parallelize().
 		Show()
 }

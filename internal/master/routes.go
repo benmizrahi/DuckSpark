@@ -4,13 +4,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/benmizrahi/godist/protos"
+	"github.com/benmizrahi/godist/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"
 )
 
-func (w *Master) registerHandler(c *gin.Context) {
+func (co *Context) registerHandler(c *gin.Context) {
 	buf, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Fatalln("Failed to parse register request:", err)
@@ -20,7 +20,7 @@ func (w *Master) registerHandler(c *gin.Context) {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	w.Workers[req.Uuid] = req.Http
+	co.Workers[req.Uuid] = req.Http
 
 	data := &protos.RegisterRes{
 		Ok: true,

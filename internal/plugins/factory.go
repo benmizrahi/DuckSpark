@@ -1,8 +1,8 @@
 package plugins
 
 import (
-	"github.com/benmizrahi/godist/plugins/contract"
-	"github.com/benmizrahi/godist/plugins/impl"
+	"github.com/benmizrahi/godist/internal/plugins/contract"
+	"github.com/benmizrahi/godist/internal/plugins/impl"
 )
 
 func MakeBuildIns() map[string]func() contract.IPluginContract {
