@@ -8,46 +8,27 @@ import (
 	"sync"
 	"time"
 
-	"github.com/benmizrahi/godist/internal/plugins"
-	"github.com/benmizrahi/godist/internal/plugins/contract"
 	"github.com/benmizrahi/godist/internal/protos"
 	"github.com/benmizrahi/godist/internal/worker"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
-	ginlogrus "github.com/toorop/gin-logrus"
 )
 
 type Context struct {
-	session *Master
 	IsLocal bool
 	Workers map[string]string
-	Http    *gin.Engine
-	plugins map[string]func() contract.IPluginContract
-	plan    []*protos.IPartition
 }
 
-func NewContext(master *Master, isLocal bool, minWorkers int) *Context {
+func NewContext(isLocal bool, minWorkers int, masterPath string) *Context {
 
 	context := &Context{
 		IsLocal: isLocal,
 		Workers: map[string]string{},
-		session: master,
-		Http:    gin.New(),
-		plugins: map[string]func() contract.IPluginContract{},
 	}
 
-	context.Http.Use(ginlogrus.Logger(logrus.New()), gin.Recovery())
-	context.Http.POST("/api/register", context.registerHandler)
-	go context.Http.Run(master.MasterPath)
-	log.Info("GoDist Master, master is listening on ", master.MasterPath)
-
-	//load all internal plugins
-	context.loadBuildInPlugins()
-
 	//start all workers
-	context.handleWorkers(minWorkers, isLocal, master.MasterPath)
+	context.handleWorkers(minWorkers, isLocal, masterPath)
 
 	for len(context.Workers) != minWorkers {
 		log.Info("GoDist Master, wating for %d workers to register..", minWorkers)
@@ -101,13 +82,6 @@ func (c *Context) DoAction(plan []*protos.IPartition) []*protos.IPartitionResult
 	return allPartitionResults
 }
 
-func (c *Context) loadBuildInPlugins() {
-	for key, plugin := range plugins.MakeBuildIns() {
-		c.plugins[key] = plugin
-		log.Info("GoDist Master, plugin loaded ", key)
-	}
-}
-
 func (c *Context) handleWorkers(minWorkers int, isLocal bool, masterPath string) {
 	if isLocal {
 		for i := 0; i < minWorkers; i++ {
@@ -116,4 +90,23 @@ func (c *Context) handleWorkers(minWorkers int, isLocal bool, masterPath string)
 	} else {
 		//TODO: implement GKE based orchstrations
 	}
+}
+
+func (co *Context) RegisterHandler(c *gin.Context) {
+	buf, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		log.Fatalln("Failed to parse register request:", err)
+	}
+	req := &protos.RegisterReq{}
+	if err := proto.Unmarshal(buf, req); err != nil {
+		log.Fatalln("Failed to parse register request:", err)
+	}
+
+	co.Workers[req.Uuid] = req.Http
+
+	data := &protos.RegisterRes{
+		Ok: true,
+	}
+
+	c.ProtoBuf(http.StatusOK, data)
 }

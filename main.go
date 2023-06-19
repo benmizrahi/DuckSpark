@@ -22,6 +22,6 @@ func main() {
 
 	master.
 		NewMaster(*isLocal, *host, *port, 2).
-		Parallelize().
+		Parallelize("ID,Name \n 1,BEN").
 		Show()
 }

@@ -1,4 +1,4 @@
-package impl
+package plugins
 
 import (
 	"encoding/csv"
@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/benmizrahi/godist/internal/common"
-	"github.com/benmizrahi/godist/internal/plugins/contract"
 	"github.com/benmizrahi/godist/internal/protos"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -63,7 +62,7 @@ func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 }
 
 // Configs implements contract.IPluginContract
-func (p FSPlugin) Configs(conf map[string]string) contract.IPluginContract {
+func (p FSPlugin) Configs(conf map[string]string) common.IPluginContract {
 	p.Format = conf["format"]
 	p.Path = conf["path"]
 	p.Parallelism = 1
@@ -72,11 +71,6 @@ func (p FSPlugin) Configs(conf map[string]string) contract.IPluginContract {
 		p.Parallelism = int(marks)
 	}
 	return p
-}
-
-// Name implements plugins.IPluginContract
-func (p FSPlugin) Name() string {
-	return "fsplugin"
 }
 
 // Plan implements plugins.IPluginContract
@@ -105,7 +99,12 @@ func (p FSPlugin) PlanRead() []*protos.IPartition {
 	return distribution
 }
 
+// Name implements plugins.IPluginContract
+func Name() string {
+	return "fsplugin"
+}
+
 // Name must be New + struct name
-func NewFSPlugin() contract.IPluginContract {
+func NewFSPlugin() common.IPluginContract {
 	return FSPlugin{}
 }

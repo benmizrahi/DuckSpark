@@ -4,11 +4,10 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/benmizrahi/godist/internal/protos"
-	"github.com/google/uuid"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	ginlogrus "github.com/toorop/gin-logrus"
 )
 
 // singeltone instance of master!
@@ -20,50 +19,37 @@ var masterInstance *Master
 type Master struct {
 	MasterPath string
 	context    *Context
+	Http       *gin.Engine
 }
 
 func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 	if masterInstance == nil {
 		lock.Lock()
 		log.Info("GoDist Master, Creating new master instance")
-		w := &Master{
+		m := &Master{
 			MasterPath: host + ":" + strconv.Itoa(port),
+			Http:       gin.New(),
 		}
-		w.context = NewContext(w, isLocal, minWorkers)
+
+		m.Http.Use(ginlogrus.Logger(logrus.New()), gin.Recovery())
+		m.Http.POST("/api/register", m.context.RegisterHandler)
+		go m.Http.Run(m.MasterPath)
+		log.Info("GoDist Master, master is listening on ", m.MasterPath)
+
+		m.context = NewContext(isLocal, minWorkers, m.MasterPath)
 		lock.Unlock()
-		return w
+		return m
 	}
 	return masterInstance
 }
 
-func (w *Master) Extract(from string, config map[string]string) *Master {
-	return w
+func (m *Master) Parallelize(csv string) *Mafream {
+	mf := NewDataFrame(m.context, []string{}, 1)
+	return mf
 }
 
-func (w *Master) Parallelize() *Master {
-	return w
-}
+func (m *Master) Load() *Mafream {
 
-func (w *Master) Transform() *Master {
-	return w
-}
-
-func (w *Master) Load(job string) *Master {
-	return w
-}
-
-func (w *Master) Show() *Master {
-	for _, partition := range w.context.plan {
-		partition.Tasks = append(partition.Tasks, &protos.Task{
-			Uuid:         uuid.New().String(),
-			Instactions:  []string{protos.TAKE, protos.LIMIT},
-			CreationTime: timestamppb.Now(),
-		})
-	}
-
-	planResults := w.context.DoAction(w.context.plan)
-	for _, res := range planResults {
-		logrus.Info(res.TaskResults)
-	}
-	return w
+	mf := NewDataFrame(m.context, []string{}, 1)
+	return mf
 }

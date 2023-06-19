@@ -1,5 +1,7 @@
 package common
 
+import "fmt"
+
 func ChunkSlice[T interface{}](slice []T, chunkSize int) [][]T {
 	var chunks [][]T
 	for i := 0; i < len(slice); i += chunkSize {
@@ -15,4 +17,12 @@ func ChunkSlice[T interface{}](slice []T, chunkSize int) [][]T {
 	}
 
 	return chunks
+}
+
+func ConvertToStrings(row []interface{}) []string {
+	strings := make([]string, len(row))
+	for i, value := range row {
+		strings[i] = fmt.Sprintf("%v", value)
+	}
+	return strings
 }
