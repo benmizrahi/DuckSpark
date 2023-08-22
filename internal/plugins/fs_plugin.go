@@ -100,7 +100,7 @@ func (p FSPlugin) PlanRead() []*protos.IPartition {
 }
 
 // Name implements plugins.IPluginContract
-func Name() string {
+func (p FSPlugin) Name() string {
 	return "fsplugin"
 }
 

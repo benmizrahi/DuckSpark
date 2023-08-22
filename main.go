@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"github.com/benmizrahi/godist/internal/common"
 	"github.com/benmizrahi/godist/internal/master"
 	log "github.com/sirupsen/logrus"
 )
@@ -20,8 +21,18 @@ func main() {
 	log.Info("your wish is my command... lets GO!!")
 	log.Info("******************")
 
+	data := [][]string{
+		{"WORD"},
+		{"HELLO"},
+		{"WORLD"},
+		{"GOLANG"},
+		{"IS"},
+		{"THE"},
+		{"BEST"},
+	}
+	// word count example
 	master.
 		NewMaster(*isLocal, *host, *port, 2).
-		Parallelize("ID,Name \n 1,BEN").
+		Parallelize(data, common.Options{}).
 		Show()
 }

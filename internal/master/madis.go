@@ -13,21 +13,16 @@ type Mafream struct {
 	context *Context
 }
 
-// Partition represents a partition of data in the DataFrame.
-type MaPartition struct {
-	columns []string
-}
-
 func NewDataFrame(c *Context, columns []string, numPartitions int) *Mafream {
-	partitions := make([]*MaPartition, numPartitions)
+	partitions := make([]*protos.IPartition, numPartitions)
 	for i := 0; i < numPartitions; i++ {
-		partitions[i] = &MaPartition{
-			columns: columns,
-		}
+		partitions[i] = &protos.IPartition{}
 	}
 
 	return &Mafream{
 		columns: columns,
+		plan:    partitions,
+		context: c,
 	}
 }
 
@@ -44,5 +39,9 @@ func (w *Mafream) Show() *Mafream {
 	for _, res := range planResults {
 		logrus.Info(res.TaskResults)
 	}
+	return w
+}
+
+func (w *Mafream) Count() *Mafream {
 	return w
 }

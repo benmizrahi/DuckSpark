@@ -10,7 +10,6 @@ import (
 
 	"github.com/benmizrahi/godist/internal/protos"
 	"github.com/benmizrahi/godist/internal/worker"
-	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,26 +17,32 @@ import (
 type Context struct {
 	IsLocal bool
 	Workers map[string]string
+	//private
+	minWorkers int
+	masterPath string
 }
 
 func NewContext(isLocal bool, minWorkers int, masterPath string) *Context {
 
 	context := &Context{
-		IsLocal: isLocal,
-		Workers: map[string]string{},
+		IsLocal:    isLocal,
+		Workers:    map[string]string{},
+		minWorkers: minWorkers,
+		masterPath: masterPath,
 	}
+	return context
+}
 
-	//start all workers
-	context.handleWorkers(minWorkers, isLocal, masterPath)
+func (c *Context) InitContext() {
+	// start all workers
+	c.handleWorkers(c.minWorkers, c.IsLocal, c.masterPath)
 
-	for len(context.Workers) != minWorkers {
-		log.Info("GoDist Master, wating for %d workers to register..", minWorkers)
+	for len(c.Workers) != c.minWorkers {
+		log.Info("GoDist Master, wating for %d workers to register..", c.minWorkers)
 		time.Sleep(1 * time.Second)
 	}
-
 	log.Info("GoDist Master, all workers are ready")
 
-	return context
 }
 
 func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.IPartition) *protos.IPartitionResult {
@@ -90,23 +95,4 @@ func (c *Context) handleWorkers(minWorkers int, isLocal bool, masterPath string)
 	} else {
 		//TODO: implement GKE based orchstrations
 	}
-}
-
-func (co *Context) RegisterHandler(c *gin.Context) {
-	buf, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		log.Fatalln("Failed to parse register request:", err)
-	}
-	req := &protos.RegisterReq{}
-	if err := proto.Unmarshal(buf, req); err != nil {
-		log.Fatalln("Failed to parse register request:", err)
-	}
-
-	co.Workers[req.Uuid] = req.Http
-
-	data := &protos.RegisterRes{
-		Ok: true,
-	}
-
-	c.ProtoBuf(http.StatusOK, data)
 }

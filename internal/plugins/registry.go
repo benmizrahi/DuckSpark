@@ -6,7 +6,8 @@ var pluginRegistry = map[string]*common.IPluginContract{}
 
 func init() {
 	// add the plugin initializer to the registry
-	pluginRegistry = append(pluginRegistry, NewFSPlugin)
+	fs := NewFSPlugin()
+	pluginRegistry[fs.Name()] = &fs
 }
 
 func GetPlugin(name string) *common.IPluginContract {

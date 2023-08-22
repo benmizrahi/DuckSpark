@@ -12,3 +12,6 @@ type IPluginContract interface {
 	//runtime
 	Execute(*protos.Task) *protos.TaskResult
 }
+
+type Options struct {
+}
