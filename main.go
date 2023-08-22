@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	"github.com/benmizrahi/godist/internal/common"
-	"github.com/benmizrahi/godist/internal/master"
+	"github.com/benmizrahi/gobig/internal/common"
+	"github.com/benmizrahi/gobig/internal/master"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,7 +15,7 @@ func main() {
 	isLocal := flag.Bool("isLocal", true, "# Run locally with processes K8S/Local")
 	flag.Parse()
 
-	log.Info("Godist Status: Starting")
+	log.Info("gobig Status: Starting")
 	log.Info("******************")
 	log.Info("Status: Ready!")
 	log.Info("your wish is my command... lets GO!!")

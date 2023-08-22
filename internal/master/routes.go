@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/benmizrahi/godist/internal/protos"
+	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"

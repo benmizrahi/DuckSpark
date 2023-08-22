@@ -1,4 +1,4 @@
-module github.com/benmizrahi/godist
+module github.com/benmizrahi/gobig
 
 go 1.19
 

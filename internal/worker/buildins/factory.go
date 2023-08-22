@@ -1,7 +1,7 @@
 package buildins
 
 import (
-	"github.com/benmizrahi/godist/internal/protos"
+	"github.com/benmizrahi/gobig/internal/protos"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

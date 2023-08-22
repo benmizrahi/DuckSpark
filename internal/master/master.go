@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/benmizrahi/godist/internal/common"
-	"github.com/benmizrahi/godist/internal/protos"
+	"github.com/benmizrahi/gobig/internal/common"
+	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
@@ -30,7 +30,7 @@ type Master struct {
 func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 	if masterInstance == nil {
 		lock.Lock()
-		log.Info("GoDist Master, Creating new master instance")
+		log.Info("gobig Master, Creating new master instance")
 		m := &Master{
 			MasterPath: host + ":" + strconv.Itoa(port),
 			Http:       gin.New(),
@@ -40,7 +40,7 @@ func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 
 		m.Http.POST("/api/register", m.RegisterHandler)
 		go m.Http.Run(m.MasterPath)
-		log.Info("GoDist Master, master is listening on ", m.MasterPath)
+		log.Info("gobig Master, master is listening on ", m.MasterPath)
 
 		m.context = NewContext(isLocal, minWorkers, m.MasterPath)
 

@@ -1,6 +1,6 @@
 package common
 
-import "github.com/benmizrahi/godist/internal/protos"
+import "github.com/benmizrahi/gobig/internal/protos"
 
 type IPluginContract interface {
 	//Plugin Name

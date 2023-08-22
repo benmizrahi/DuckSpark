@@ -8,8 +8,8 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/benmizrahi/godist/internal/common"
-	"github.com/benmizrahi/godist/internal/protos"
+	"github.com/benmizrahi/gobig/internal/common"
+	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"

@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/benmizrahi/godist/internal/protos"
-	"github.com/benmizrahi/godist/internal/worker"
+	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/gobig/internal/worker"
 	"github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"
 )
@@ -38,10 +38,10 @@ func (c *Context) InitContext() {
 	c.handleWorkers(c.minWorkers, c.IsLocal, c.masterPath)
 
 	for len(c.Workers) != c.minWorkers {
-		log.Info("GoDist Master, wating for %d workers to register..", c.minWorkers)
+		log.Info("gobig Master, wating for %d workers to register..", c.minWorkers)
 		time.Sleep(1 * time.Second)
 	}
-	log.Info("GoDist Master, all workers are ready")
+	log.Info("gobig Master, all workers are ready")
 
 }
 

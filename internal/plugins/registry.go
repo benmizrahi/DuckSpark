@@ -1,6 +1,6 @@
 package plugins
 
-import "github.com/benmizrahi/godist/internal/common"
+import "github.com/benmizrahi/gobig/internal/common"
 
 var pluginRegistry = map[string]*common.IPluginContract{}
 
