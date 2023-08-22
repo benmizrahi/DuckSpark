@@ -3,7 +3,6 @@ package master
 import (
 	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -27,21 +26,31 @@ func NewDataFrame(c *Context, columns []string, numPartitions int) *Mafream {
 }
 
 func (w *Mafream) Show() *Mafream {
-	for _, partition := range w.plan {
-		partition.Tasks = append(partition.Tasks, &protos.Task{
-			Uuid:         uuid.New().String(),
-			Instactions:  []string{protos.TAKE, protos.LIMIT},
-			CreationTime: timestamppb.Now(),
-		})
-	}
-
-	planResults := w.context.DoAction(w.plan)
-	for _, res := range planResults {
-		logrus.Info(res.TaskResults)
-	}
+	actions := []string{protos.TAKE, protos.LIMIT}
+	w.assignActions(actions)
+	results := w.context.DoAction(w.plan)
+	w.handleTasksResults(actions, results)
 	return w
 }
 
 func (w *Mafream) Count() *Mafream {
+	actions := []string{protos.COUNT}
+	w.assignActions([]string{protos.COUNT})
+	results := w.context.DoAction(w.plan)
+	w.handleTasksResults(actions, results)
 	return w
+}
+
+func (w *Mafream) assignActions(actions []string) {
+	for _, partition := range w.plan {
+		partition.Tasks = append(partition.Tasks, &protos.Task{
+			Uuid:         uuid.New().String(),
+			Instactions:  actions,
+			CreationTime: timestamppb.Now(),
+		})
+	}
+}
+
+func (w *Mafream) handleTasksResults(actions []string, res []*protos.IPartitionResult) {
+
 }

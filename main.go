@@ -18,11 +18,9 @@ func main() {
 	log.Info("gobig Status: Starting")
 	log.Info("******************")
 	log.Info("Status: Ready!")
-	log.Info("your wish is my command... lets GO!!")
 	log.Info("******************")
 
 	data := [][]string{
-		{"WORD"},
 		{"HELLO"},
 		{"WORLD"},
 		{"GOLANG"},
@@ -34,5 +32,5 @@ func main() {
 	master.
 		NewMaster(*isLocal, *host, *port, 2).
 		Parallelize(data, common.Options{}).
-		Show()
+		Count()
 }
