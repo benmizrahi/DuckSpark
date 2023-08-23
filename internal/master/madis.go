@@ -39,7 +39,7 @@ func (w *Mafream) assignActions(actions []string) {
 	for _, partition := range w.partitions {
 		partition.Tasks = append(partition.Tasks, &protos.Task{
 			Uuid:         uuid.New().String(),
-			Instactions:  actions,
+			Instruction:  actions,
 			CreationTime: timestamppb.Now(),
 		})
 	}

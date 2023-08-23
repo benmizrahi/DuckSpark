@@ -27,8 +27,8 @@ func (w *Worker) tasksHandler(c *gin.Context) {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	req := &protos.IPartition{}
-	if err := proto.Unmarshal(buf, req); err != nil {
+	partition := &protos.IPartition{}
+	if err := proto.Unmarshal(buf, partition); err != nil {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
@@ -36,12 +36,8 @@ func (w *Worker) tasksHandler(c *gin.Context) {
 		TaskResults: []*protos.TaskResult{},
 	}
 
-	for _, task := range req.Tasks {
-		if task.Plugin != "" {
-			res.TaskResults = append(res.TaskResults, w.Plugins[task.Plugin].Execute(task))
-		}
-
-		res.TaskResults = append(res.TaskResults, buildins.MakeInstactions(task))
+	for _, task := range partition.Tasks {
+		res.TaskResults = buildins.MakeTaskInstruction(partition, task)
 	}
 
 	res.EndTime = timestamppb.Now()

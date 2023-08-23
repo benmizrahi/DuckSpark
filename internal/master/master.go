@@ -1,6 +1,8 @@
 package master
 
 import (
+	"bytes"
+	"encoding/gob"
 	"io"
 	"math/rand"
 	"net/http"
@@ -9,7 +11,6 @@ import (
 
 	"github.com/benmizrahi/gobig/internal/common"
 	"github.com/benmizrahi/gobig/internal/protos"
-	lzstring "github.com/daku10/go-lz-string"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
@@ -76,17 +77,18 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 }
 
 func (m *Master) Parallelize(data [][]string, option common.Options) *Mafream {
-	//first row it's the columns row
-	columns := data[0]
-	mf := NewDataFrame(m.context, columns)
 
-	mf.partitions = m.buildPartitons(data, 10)
-
+	mf := NewDataFrame(m.context, option.Columns)
+	partitions, err := m.buildParallelizePartitons(common.ConvertStringSliceToInterfaceSlice(data), nil)
+	if err != nil {
+		logrus.Error("error building Parallelize partitions")
+		m.shutDown()
+	}
+	mf.partitions = partitions
 	for _, p := range mf.partitions {
-
 		p.Tasks = append(p.Tasks, &protos.Task{
 			Uuid:         uuid.New().String(),
-			Instactions:  []string{protos.IN_MEMORY_READ},
+			Instruction:  []string{protos.IN_MEMORY_READ},
 			CreationTime: timestamppb.Now(),
 		})
 	}
@@ -98,8 +100,8 @@ func (m *Master) Load() *Mafream {
 	return mf
 }
 
-func (m *Master) buildPartitons(data [][]interface{}, requestedNumPartitions *int) []*protos.IPartition {
-	numPartitions := m.calculatePartitons(data, requestedNumPartitions)
+func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPartitions *int) ([]*protos.IPartition, error) {
+	numPartitions := m.calculatePartitons(data)
 	partitions := make([]*protos.IPartition, numPartitions)
 
 	// Shuffle the data
@@ -107,28 +109,54 @@ func (m *Master) buildPartitons(data [][]interface{}, requestedNumPartitions *in
 		dataTypes := m.recogizeTypes(row)
 		partitionIndex := rand.Intn(numPartitions)
 		if partitions[partitionIndex] == nil {
-			partitions[partitionIndex] = &protos.IPartition{}
+			partitions[partitionIndex] = &protos.IPartition{
+				Uuid: uuid.New().String(),
+			}
 		}
 		if partitions[partitionIndex].Data == nil {
 			partitions[partitionIndex].Data = make([]*protos.Data, 0)
 		}
-		data, err := lzstring.Compress()
-		if err != nil {
-			// data = row
-		}
 		partitions[partitionIndex].Data = append(partitions[partitionIndex].Data, &protos.Data{
 			DataTypes:     *dataTypes,
-			CopressedData: data,
+			CopressedData: common.ByteArrayToInt(m.serialize(data)),
 		})
 	}
 
-	return partitions
+	return partitions, nil
 }
-func (m *Master) calculatePartitons(data [][]interface{}, numPartitions *int) int {
-	return 1
+
+func (m *Master) calculatePartitons(data [][]interface{}) int {
+
+	totalProcessingUnits := len(m.context.Workers)
+
+	// Calculate the total size of the data
+	totalDataSize := common.CalculateTotalDataSize(data)
+
+	// Calculate the optimal partition size based on available resources and data size
+	optimalPartitionSize := totalDataSize / totalProcessingUnits
+
+	// Calculate the number of partitions based on the optimal partition size
+	numPartitions := len(data) / optimalPartitionSize
+
+	// Adjust the number of partitions to a minimum value of 1
+	if numPartitions <= 0 {
+		numPartitions = 1
+	}
+	return numPartitions
+}
+
+func (m *Master) serialize(data [][]interface{}) []byte {
+	buf := &bytes.Buffer{}
+	gob.NewEncoder(buf).Encode(data)
+	bs := buf.Bytes()
+	return bs
 }
 
 func (m *Master) recogizeTypes(data []interface{}) *[]protos.DataType {
 
 	return &[]protos.DataType{}
+}
+
+func (m *Master) shutDown() {
+	log.Fatal("error")
 }

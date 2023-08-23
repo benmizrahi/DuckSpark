@@ -1,6 +1,9 @@
 package common
 
-import "fmt"
+import (
+	"fmt"
+	"unsafe"
+)
 
 func ChunkSlice[T interface{}](slice []T, chunkSize int) [][]T {
 	var chunks [][]T
@@ -25,4 +28,63 @@ func ConvertToStrings(row []interface{}) []string {
 		strings[i] = fmt.Sprintf("%v", value)
 	}
 	return strings
+}
+
+func IntToByteArray(num int64) []byte {
+	size := int(unsafe.Sizeof(num))
+	arr := make([]byte, size)
+	for i := 0; i < size; i++ {
+		byt := *(*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(&num)) + uintptr(i)))
+		arr[i] = byt
+	}
+	return arr
+}
+
+func ByteArrayToInt(arr []byte) int64 {
+	val := int64(0)
+	size := len(arr)
+	for i := 0; i < size; i++ {
+		*(*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(&val)) + uintptr(i))) = arr[i]
+	}
+	return val
+}
+
+func CalculateTotalDataSize(data [][]interface{}) int {
+	totalSize := 0
+
+	for _, partition := range data {
+		for _, element := range partition {
+			elementSize := getElementSize(element)
+			totalSize += elementSize
+		}
+	}
+
+	return totalSize
+}
+
+func getElementSize(element interface{}) int {
+	switch v := element.(type) {
+	case string:
+		return len(v)
+	case []byte:
+		return len(v)
+	// Add more cases for other types as needed
+	default:
+		// Handle other data types or return an appropriate default size
+		return 0
+	}
+}
+
+func ConvertStringSliceToInterfaceSlice(data [][]string) [][]interface{} {
+	convertedData := make([][]interface{}, len(data))
+
+	for i, row := range data {
+		convertedRow := make([]interface{}, len(row))
+		for j, value := range row {
+			convertedRow[j] = interface{}(value)
+		}
+		convertedData[i] = convertedRow
+	}
+
+	return convertedData
 }

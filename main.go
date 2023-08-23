@@ -32,6 +32,10 @@ func main() {
 	// word count example
 	master.
 		NewMaster(*isLocal, *host, *port, 2).
-		Parallelize(data, common.Options{}).
+		Parallelize(data, common.Options{
+			Columns: []string{
+				"data",
+			},
+		}).
 		Count()
 }

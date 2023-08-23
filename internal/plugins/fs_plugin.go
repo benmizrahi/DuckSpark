@@ -1,7 +1,6 @@
 package plugins
 
 import (
-	"encoding/csv"
 	"io/ioutil"
 	"log"
 	"os"
@@ -23,7 +22,7 @@ type FSPlugin struct {
 // Execute implements contract.IPluginContract (worker job)
 func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 
-	from := task.Instactions[1]
+	from := task.Instruction[1]
 	d, err := os.Open(from)
 	if err != nil {
 		logrus.Error("unable to read partition file", err)
@@ -35,23 +34,23 @@ func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 	}
 	defer d.Close()
 
-	csvReader := csv.NewReader(d)
-	data, err := csvReader.ReadAll()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// csvReader := csv.NewReader(d)
+	// data, err := csvReader.ReadAll()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	rows := []*protos.DataRow{}
-	for _, row := range data {
+	rows := []*protos.Data{}
+	// for _, row := range data {
 
-		d := protos.DataRow{
-			Data: []string{},
-		}
-		for _, column := range row {
-			d.Data = append(d.Data, column)
-		}
-		rows = append(rows, &d)
-	}
+	// d := protos.Data{
+	// 	Data: []string{},
+	// }
+	// for _, column := range row {
+	// 	d.Data = append(d.Data, column)
+	// }
+	// rows = append(rows, &d)
+	// }
 
 	return &protos.TaskResult{
 		Uuid:    task.Uuid,
@@ -83,7 +82,7 @@ func (p FSPlugin) PlanRead() []*protos.IPartition {
 	for _, file := range files {
 		tasks = append(tasks, &protos.Task{
 			Uuid:         uuid.New().String(),
-			Instactions:  []string{"read", p.Path + file.Name()},
+			Instruction:  []string{"read", p.Path + file.Name()},
 			Plugin:       p.Name(),
 			CreationTime: timestamppb.Now(),
 		})
