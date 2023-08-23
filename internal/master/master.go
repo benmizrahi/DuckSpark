@@ -1,10 +1,7 @@
 package master
 
 import (
-	"bytes"
-	"encoding/gob"
 	"io"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"sync"
@@ -17,7 +14,6 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	ginlogrus "github.com/toorop/gin-logrus"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // singeltone instance of master!
@@ -77,7 +73,6 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 }
 
 func (m *Master) Parallelize(data [][]string, option common.Options) *Mafream {
-
 	mf := NewDataFrame(m.context, option.Columns)
 	partitions, err := m.buildParallelizePartitons(common.ConvertStringSliceToInterfaceSlice(data), nil)
 	if err != nil {
@@ -85,13 +80,6 @@ func (m *Master) Parallelize(data [][]string, option common.Options) *Mafream {
 		m.shutDown()
 	}
 	mf.partitions = partitions
-	for _, p := range mf.partitions {
-		p.Tasks = append(p.Tasks, &protos.Task{
-			Uuid:         uuid.New().String(),
-			Instruction:  []string{protos.IN_MEMORY_READ},
-			CreationTime: timestamppb.Now(),
-		})
-	}
 	return mf
 }
 
@@ -100,14 +88,16 @@ func (m *Master) Load() *Mafream {
 	return mf
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPartitions *int) ([]*protos.IPartition, error) {
 	numPartitions := m.calculatePartitons(data)
 	partitions := make([]*protos.IPartition, numPartitions)
 
 	// Shuffle the data
-	for _, row := range data {
+	for index, row := range data {
 		dataTypes := m.recogizeTypes(row)
-		partitionIndex := rand.Intn(numPartitions)
+		partitionIndex := index % numPartitions
 		if partitions[partitionIndex] == nil {
 			partitions[partitionIndex] = &protos.IPartition{
 				Uuid: uuid.New().String(),
@@ -116,9 +106,13 @@ func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPar
 		if partitions[partitionIndex].Data == nil {
 			partitions[partitionIndex].Data = make([]*protos.Data, 0)
 		}
+		b, err := common.Serialize(row)
+		if err != nil {
+			logrus.Error("error Serialize row,", err)
+		}
 		partitions[partitionIndex].Data = append(partitions[partitionIndex].Data, &protos.Data{
-			DataTypes:     *dataTypes,
-			CopressedData: common.ByteArrayToInt(m.serialize(data)),
+			DataTypes:    *dataTypes,
+			CompressData: b,
 		})
 	}
 
@@ -140,16 +134,9 @@ func (m *Master) calculatePartitons(data [][]interface{}) int {
 
 	// Adjust the number of partitions to a minimum value of 1
 	if numPartitions <= 0 {
-		numPartitions = 1
+		numPartitions = 2
 	}
 	return numPartitions
-}
-
-func (m *Master) serialize(data [][]interface{}) []byte {
-	buf := &bytes.Buffer{}
-	gob.NewEncoder(buf).Encode(data)
-	bs := buf.Bytes()
-	return bs
 }
 
 func (m *Master) recogizeTypes(data []interface{}) *[]protos.DataType {

@@ -42,7 +42,6 @@ func (c *Context) InitContext() {
 		time.Sleep(1 * time.Second)
 	}
 	log.Info("gobig Master, all workers are ready")
-
 }
 
 func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.IPartition) *protos.IPartitionResult {

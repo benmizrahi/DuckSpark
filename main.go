@@ -22,12 +22,10 @@ func main() {
 	log.Info("******************")
 
 	data := [][]string{
-		{"HELLO"},
-		{"WORLD"},
-		{"GOLANG"},
-		{"IS"},
-		{"THE"},
-		{"BEST"},
+		{"HELLO WORLD"},
+		{"GOLANG IS"},
+		{"THE BEST"},
+		{"Programming Language"},
 	}
 	// word count example
 	master.

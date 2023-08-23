@@ -1,8 +1,9 @@
 package common
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
-	"unsafe"
 )
 
 func ChunkSlice[T interface{}](slice []T, chunkSize int) [][]T {
@@ -21,6 +22,25 @@ func ChunkSlice[T interface{}](slice []T, chunkSize int) [][]T {
 
 	return chunks
 }
+func Deserialize(serializedData []byte) ([]interface{}, error) {
+	var data []interface{}
+	buf := bytes.NewBuffer(serializedData)
+	decoder := gob.NewDecoder(buf)
+	err := decoder.Decode(&data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func Serialize(data []interface{}) ([]byte, error) {
+	buf := &bytes.Buffer{}
+	err := gob.NewEncoder(buf).Encode(data)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
 
 func ConvertToStrings(row []interface{}) []string {
 	strings := make([]string, len(row))
@@ -28,25 +48,6 @@ func ConvertToStrings(row []interface{}) []string {
 		strings[i] = fmt.Sprintf("%v", value)
 	}
 	return strings
-}
-
-func IntToByteArray(num int64) []byte {
-	size := int(unsafe.Sizeof(num))
-	arr := make([]byte, size)
-	for i := 0; i < size; i++ {
-		byt := *(*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(&num)) + uintptr(i)))
-		arr[i] = byt
-	}
-	return arr
-}
-
-func ByteArrayToInt(arr []byte) int64 {
-	val := int64(0)
-	size := len(arr)
-	for i := 0; i < size; i++ {
-		*(*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(&val)) + uintptr(i))) = arr[i]
-	}
-	return val
 }
 
 func CalculateTotalDataSize(data [][]interface{}) int {

@@ -9,6 +9,19 @@ require (
 )
 
 require (
+	github.com/d4l3k/go-pry v0.0.0-20230221054152-cca3eb982836 // indirect
+	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/mattn/go-tty v0.0.3 // indirect
+	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/samber/lo v1.38.1 // indirect
+	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
+	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/tools v0.6.0 // indirect
+)
+
+require (
 	github.com/bytedance/sonic v1.8.4 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/daku10/go-lz-string v0.0.5

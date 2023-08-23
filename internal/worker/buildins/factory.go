@@ -8,14 +8,8 @@ func MakeTaskInstruction(partition *protos.IPartition, t *protos.Task) []*protos
 	res := []*protos.TaskResult{}
 	for _, instruction := range t.Instruction {
 		switch instruction {
-		case protos.IN_MEMORY_READ:
-			continue
 		case protos.COUNT:
-			continue
-		case protos.LIMIT:
-			continue
-		case protos.TAKE:
-			continue
+			res = append(res, Count(t.Uuid, partition.Data))
 		}
 	}
 	return res

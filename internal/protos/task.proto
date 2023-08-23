@@ -18,7 +18,7 @@ message IPartition {
 
 message Data {
     repeated DataType dataTypes = 1;
-    int64 copressedData = 2;
+    bytes compressData = 2;
 }
 
 message Task {
