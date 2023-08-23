@@ -7,20 +7,14 @@ import (
 )
 
 type Mafream struct {
-	columns []string
-	plan    []*protos.IPartition
-	context *Context
+	columns    []string
+	partitions []*protos.IPartition
+	context    *Context
 }
 
-func NewDataFrame(c *Context, columns []string, numPartitions int) *Mafream {
-	partitions := make([]*protos.IPartition, numPartitions)
-	for i := 0; i < numPartitions; i++ {
-		partitions[i] = &protos.IPartition{}
-	}
-
+func NewDataFrame(c *Context, columns []string) *Mafream {
 	return &Mafream{
 		columns: columns,
-		plan:    partitions,
 		context: c,
 	}
 }
@@ -28,7 +22,7 @@ func NewDataFrame(c *Context, columns []string, numPartitions int) *Mafream {
 func (w *Mafream) Show() *Mafream {
 	actions := []string{protos.TAKE, protos.LIMIT}
 	w.assignActions(actions)
-	results := w.context.DoAction(w.plan)
+	results := w.context.DoAction(w.partitions)
 	w.handleTasksResults(actions, results)
 	return w
 }
@@ -36,13 +30,13 @@ func (w *Mafream) Show() *Mafream {
 func (w *Mafream) Count() *Mafream {
 	actions := []string{protos.COUNT}
 	w.assignActions([]string{protos.COUNT})
-	results := w.context.DoAction(w.plan)
+	results := w.context.DoAction(w.partitions)
 	w.handleTasksResults(actions, results)
 	return w
 }
 
 func (w *Mafream) assignActions(actions []string) {
-	for _, partition := range w.plan {
+	for _, partition := range w.partitions {
 		partition.Tasks = append(partition.Tasks, &protos.Task{
 			Uuid:         uuid.New().String(),
 			Instactions:  actions,

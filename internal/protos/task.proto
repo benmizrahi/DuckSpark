@@ -3,10 +3,22 @@ option go_package = "/protos";
 import "google/protobuf/timestamp.proto";
 package protos;
 
+enum DataType {
+    string = 0;
+    int = 1;
+    double = 2;
+    long = 3;
+}
 
 message IPartition {
     string uuid = 1;
-    repeated Task Tasks = 2;
+    repeated Data Data = 2;
+    repeated Task Tasks = 3;
+}
+
+message Data {
+    repeated DataType dataTypes = 1;
+    repeated double copressedData = 2;
 }
 
 message Task {
