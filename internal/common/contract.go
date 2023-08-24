@@ -14,5 +14,6 @@ type IPluginContract interface {
 }
 
 type Options struct {
-	Columns []string
+	Columns    []string
+	Repartiton int
 }

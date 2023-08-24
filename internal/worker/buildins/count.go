@@ -6,14 +6,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Count(uuid string, data []*protos.Data) *protos.TaskResult {
+func Count(uuid string, data []*protos.Row) *protos.TaskResult {
 	res := protos.TaskResult{
 		Uuid:   uuid,
 		Status: true,
-		Data:   []*protos.Data{},
+		Rows:   []*protos.Row{},
 	}
 	for _, r := range data {
-		data, err := common.Deserialize(r.CompressData)
+		data, err := common.Deserialize(r.CompressRow)
 		if err != nil {
 			logrus.Error("error deserialize data,", err)
 		}
@@ -23,9 +23,9 @@ func Count(uuid string, data []*protos.Data) *protos.TaskResult {
 			logrus.Error("error Serialize result, ", err)
 		}
 
-		res.Data = append(res.Data, &protos.Data{
-			DataTypes:    []protos.DataType{protos.DataType_int},
-			CompressData: b,
+		res.Rows = append(res.Rows, &protos.Row{
+			DataTypes:   []protos.DataType{protos.DataType_int},
+			CompressRow: b,
 		})
 	}
 	return &res

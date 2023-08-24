@@ -40,7 +40,7 @@ func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 	// 	log.Fatal(err)
 	// }
 
-	rows := []*protos.Data{}
+	rows := []*protos.Row{}
 	// for _, row := range data {
 
 	// d := protos.Data{
@@ -55,7 +55,7 @@ func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 	return &protos.TaskResult{
 		Uuid:    task.Uuid,
 		Status:  true,
-		Data:    rows,
+		Rows:    rows,
 		EndTime: timestamppb.Now(),
 	}
 }

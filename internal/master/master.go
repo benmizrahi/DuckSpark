@@ -74,7 +74,7 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 
 func (m *Master) Parallelize(data [][]string, option common.Options) *Mafream {
 	mf := NewDataFrame(m.context, option.Columns)
-	partitions, err := m.buildParallelizePartitons(common.ConvertStringSliceToInterfaceSlice(data), nil)
+	partitions, err := m.buildParallelizePartitons(common.ConvertStringSliceToInterfaceSlice(data), &option.Repartiton)
 	if err != nil {
 		logrus.Error("error building Parallelize partitions")
 		m.shutDown()
@@ -92,6 +92,11 @@ func (m *Master) Load() *Mafream {
 
 func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPartitions *int) ([]*protos.IPartition, error) {
 	numPartitions := m.calculatePartitons(data)
+
+	if numPartitions < *requestedNumPartitions {
+		numPartitions = *requestedNumPartitions
+	}
+
 	partitions := make([]*protos.IPartition, numPartitions)
 
 	// Shuffle the data
@@ -103,16 +108,16 @@ func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPar
 				Uuid: uuid.New().String(),
 			}
 		}
-		if partitions[partitionIndex].Data == nil {
-			partitions[partitionIndex].Data = make([]*protos.Data, 0)
+		if partitions[partitionIndex].Rows == nil {
+			partitions[partitionIndex].Rows = make([]*protos.Row, 0)
 		}
 		b, err := common.Serialize(row)
 		if err != nil {
 			logrus.Error("error Serialize row,", err)
 		}
-		partitions[partitionIndex].Data = append(partitions[partitionIndex].Data, &protos.Data{
-			DataTypes:    *dataTypes,
-			CompressData: b,
+		partitions[partitionIndex].Rows = append(partitions[partitionIndex].Rows, &protos.Row{
+			DataTypes:   *dataTypes,
+			CompressRow: b,
 		})
 	}
 

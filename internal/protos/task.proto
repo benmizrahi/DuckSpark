@@ -12,13 +12,13 @@ enum DataType {
 
 message IPartition {
     string uuid = 1;
-    repeated Data Data = 2;
+    repeated Row Rows = 2;
     repeated Task Tasks = 3;
 }
 
-message Data {
+message Row {
     repeated DataType dataTypes = 1;
-    bytes compressData = 2;
+    bytes compressRow = 2;
 }
 
 message Task {
@@ -39,6 +39,6 @@ message IPartitionResult {
 message TaskResult {
     string uuid = 1;
     bool status = 2;
-    repeated Data data = 3;
+    repeated Row Rows = 3;
     google.protobuf.Timestamp endTime = 4;
 }

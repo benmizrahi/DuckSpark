@@ -25,27 +25,22 @@ func NewDataFrame(c *Context, columns []string) *Mafream {
 func (w *Mafream) Show() *Mafream {
 	actions := []string{protos.TAKE, protos.LIMIT}
 	w.assignActions(actions)
-	// results := w.context.DoAction(w.partitions)
 	return w
 }
 
-func (w *Mafream) Map() *Mafream {
+func (w *Mafream) Collect() []*protos.Row {
 	//TODO: implement map
-	return w
+	return []*protos.Row{}
 }
 
-func (w *Mafream) FlatMap() *Mafream {
-	return w
-}
-
-func (w *Mafream) Count() *Mafream {
+func (w *Mafream) Count() int {
 	w.assignActions([]string{protos.COUNT})
 	results := w.context.DoAction(w.partitions)
 	gtotal := 0
 	for _, p := range results {
 		for _, t := range p.TaskResults {
-			data := lo.Map(t.Data, func(d *protos.Data, index int) int {
-				count, err := common.Deserialize(d.CompressData)
+			data := lo.Map(t.Rows, func(d *protos.Row, index int) int {
+				count, err := common.Deserialize(d.CompressRow)
 				if err != nil {
 					logrus.Error("error deserialize data,", err)
 				}
@@ -59,8 +54,7 @@ func (w *Mafream) Count() *Mafream {
 			}, 0)
 		}
 	}
-	logrus.Info("Total Count=", gtotal)
-	return w
+	return gtotal
 }
 
 func (w *Mafream) assignActions(actions []string) {

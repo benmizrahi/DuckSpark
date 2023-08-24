@@ -9,7 +9,7 @@ func MakeTaskInstruction(partition *protos.IPartition, t *protos.Task) []*protos
 	for _, instruction := range t.Instruction {
 		switch instruction {
 		case protos.COUNT:
-			res = append(res, Count(t.Uuid, partition.Data))
+			res = append(res, Count(t.Uuid, partition.Rows))
 		}
 	}
 	return res
