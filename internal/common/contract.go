@@ -1,6 +1,8 @@
 package common
 
-import "github.com/benmizrahi/gobig/internal/protos"
+import (
+	"github.com/benmizrahi/gobig/internal/protos"
+)
 
 type IPluginContract interface {
 	//Plugin Name
@@ -11,9 +13,4 @@ type IPluginContract interface {
 	Configs(map[string]string) IPluginContract
 	//runtime
 	Execute(*protos.Task) *protos.TaskResult
-}
-
-type Options struct {
-	Columns    []string
-	Repartiton int
 }

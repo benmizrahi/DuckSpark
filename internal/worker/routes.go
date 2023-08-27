@@ -8,8 +8,8 @@ import (
 	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/benmizrahi/gobig/internal/worker/buildins"
 	"github.com/gin-gonic/gin"
+	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

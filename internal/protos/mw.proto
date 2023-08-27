@@ -13,12 +13,9 @@ message RegisterReq {
 message RegisterRes {
   bool ok = 1;
 }
-
-
 message HCReq {
   string uuid = 1;
 }
-
 message HCRes {
     string uuid = 1;
     google.protobuf.Timestamp time = 2;

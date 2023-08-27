@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"google.golang.org/protobuf/proto"
+	"github.com/golang/protobuf/proto"
 
 	"github.com/benmizrahi/gobig/internal/common"
 	"github.com/benmizrahi/gobig/internal/protos"

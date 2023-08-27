@@ -14,12 +14,11 @@ enum DataType {
 
 message IPartition {
     string uuid = 1;
-    repeated Row Rows = 2;
-    repeated Task Tasks = 3;
+    repeated Task Tasks = 2;
+    repeated Row Rows = 3;
 }
 
 message Row {
-    repeated DataType dataTypes = 1;
     bytes compressRow = 2;
 }
 

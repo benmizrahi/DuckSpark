@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/benmizrahi/gobig/internal/bigfream"
 	"github.com/benmizrahi/gobig/internal/common"
 	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,7 @@ var masterInstance *Master
 
 type Master struct {
 	MasterPath string
-	context    *Context
+	context    *bigfream.Context
 	Http       *gin.Engine
 }
 
@@ -43,7 +44,7 @@ func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 		go m.Http.Run(m.MasterPath)
 		log.Info("gobig Master, master is listening on ", m.MasterPath)
 
-		m.context = NewContext(isLocal, minWorkers, m.MasterPath)
+		m.context = bigfream.NewContext(isLocal, minWorkers, m.MasterPath)
 
 		m.context.InitContext()
 
@@ -72,53 +73,53 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 	c.ProtoBuf(http.StatusOK, data)
 }
 
-func (m *Master) Parallelize(data [][]string, option common.Options) *Mafream {
-	mf := NewDataFrame(m.context, option.Columns)
+func (m *Master) Parallelize(data [][]string, option bigfream.BigOptions) *bigfream.Bigfream {
+	var bf *bigfream.Bigfream
+	if option.Columns != nil {
+		bf = bigfream.NewBigfream(m.context, &option.Columns)
+	} else {
+		//infer types
+	}
 	partitions, err := m.buildParallelizePartitons(common.ConvertStringSliceToInterfaceSlice(data), &option.Repartiton)
 	if err != nil {
 		logrus.Error("error building Parallelize partitions")
 		m.shutDown()
 	}
-	mf.partitions = partitions
-	return mf
+	bf.AssginPartitons(partitions)
+	return bf
 }
 
-func (m *Master) Load() *Mafream {
-	mf := NewDataFrame(m.context, []string{})
+func (m *Master) Load() *bigfream.Bigfream {
+	mf := bigfream.NewBigfream(m.context, nil)
 	return mf
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPartitions *int) ([]*protos.IPartition, error) {
-	numPartitions := m.calculatePartitons(data)
 
-	// if numPartitions < *requestedNumPartitions {
-	// 	numPartitions = *requestedNumPartitions
-	// }
+	numPartitions := m.calculatePartitons(data)
 
 	partitions := make([]*protos.IPartition, numPartitions)
 
 	// Shuffle the data
-	for index, row := range data {
-		dataTypes := m.recogizeTypes(row)
+	for index, _ := range data {
 		partitionIndex := index % numPartitions
 		if partitions[partitionIndex] == nil {
 			partitions[partitionIndex] = &protos.IPartition{
 				Uuid: uuid.New().String(),
 			}
 		}
-		if partitions[partitionIndex].Rows == nil {
-			partitions[partitionIndex].Rows = make([]*protos.Row, 0)
-		}
-		b, err := common.Serialize(row)
-		if err != nil {
-			logrus.Error("error Serialize row,", err)
-		}
-		partitions[partitionIndex].Rows = append(partitions[partitionIndex].Rows, &protos.Row{
-			DataTypes:   *dataTypes,
-			CompressRow: b,
-		})
+		// if partitions[partitionIndex].Rows == nil {
+		// 	partitions[partitionIndex].Rows = make([]*protos.Row, 0)
+		// }
+		// b, err := common.Serialize[interface{}](row)
+		// if err != nil {
+		// 	logrus.Error("error Serialize row,", err)
+		// }
+		// partitions[partitionIndex].Rows = append(partitions[partitionIndex].Rows, &protos.Row{
+		// 	CompressRow: b,
+		// })
 	}
 
 	return partitions, nil
@@ -142,11 +143,6 @@ func (m *Master) calculatePartitons(data [][]interface{}) int {
 		numPartitions = 2
 	}
 	return numPartitions
-}
-
-func (m *Master) recogizeTypes(data []interface{}) *[]protos.DataType {
-
-	return &[]protos.DataType{}
 }
 
 func (m *Master) shutDown() {

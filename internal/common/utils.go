@@ -22,18 +22,18 @@ func ChunkSlice[T interface{}](slice []T, chunkSize int) [][]T {
 
 	return chunks
 }
-func Deserialize(serializedData []byte) ([]interface{}, error) {
-	var data []interface{}
+func Deserialize[T comparable](serializedData []byte) (*T, error) {
+	var data T
 	buf := bytes.NewBuffer(serializedData)
 	decoder := gob.NewDecoder(buf)
 	err := decoder.Decode(&data)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	return &data, nil
 }
 
-func Serialize(data []interface{}) ([]byte, error) {
+func Serialize[T comparable](data T) ([]byte, error) {
 	buf := &bytes.Buffer{}
 	err := gob.NewEncoder(buf).Encode(data)
 	if err != nil {
