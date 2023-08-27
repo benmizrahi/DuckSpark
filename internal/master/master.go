@@ -9,6 +9,7 @@ import (
 	"github.com/benmizrahi/gobig/internal/bigfream"
 	"github.com/benmizrahi/gobig/internal/common"
 	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/gobig/internal/shuffle"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
@@ -27,6 +28,7 @@ type Master struct {
 	MasterPath string
 	context    *bigfream.Context
 	Http       *gin.Engine
+	shuffle    shuffle.IShuffler
 }
 
 func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
@@ -45,10 +47,11 @@ func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 		log.Info("gobig Master, master is listening on ", m.MasterPath)
 
 		m.context = bigfream.NewContext(isLocal, minWorkers, m.MasterPath)
+		m.shuffle = shuffle.NewMasterShuffler(m.Http)
 
 		m.context.InitContext()
-
 		lock.Unlock()
+
 		return m
 	}
 	return masterInstance
@@ -103,7 +106,7 @@ func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPar
 	partitions := make([]*protos.IPartition, numPartitions)
 
 	// Shuffle the data
-	for index, _ := range data {
+	for index := range data {
 		partitionIndex := index % numPartitions
 		if partitions[partitionIndex] == nil {
 			partitions[partitionIndex] = &protos.IPartition{

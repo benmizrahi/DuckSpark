@@ -1,0 +1,11 @@
+syntax = "proto3";
+option go_package = "/protos";
+
+package protos;
+
+
+message TrackReq {
+    string uuid = 1;
+    string worker = 2;
+    repeated string partitions = 3;
+}

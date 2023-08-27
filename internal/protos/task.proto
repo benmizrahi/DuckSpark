@@ -14,8 +14,9 @@ enum DataType {
 
 message IPartition {
     string uuid = 1;
-    repeated Task Tasks = 2;
-    repeated Row Rows = 3;
+    string key = 2;
+    repeated Task Tasks = 3;
+    repeated Row Rows = 4;
 }
 
 message Row {

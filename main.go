@@ -19,14 +19,4 @@ func main() {
 	log.Info("Status: Ready!")
 	log.Info("******************")
 
-	// i := interp.New(interp.Options{})
-
-	// prepare := fmt.Sprintf(``, isLocal, host, port)
-
-	// i.Use(stdlib.Symbols)
-	// _, err := i.Eval(prepare)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 }
