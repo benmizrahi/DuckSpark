@@ -1,5 +1,5 @@
 
-## GoBig.io - go Bigger & Faster ![](https://github.githubassets.com/images/icons/emoji/unicode/1f680.png?v2)
+# GoBig.i/o - Bigger & Faster 
 
 <https://gobig.io/>  
 

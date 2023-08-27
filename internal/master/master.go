@@ -93,9 +93,9 @@ func (m *Master) Load() *Mafream {
 func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPartitions *int) ([]*protos.IPartition, error) {
 	numPartitions := m.calculatePartitons(data)
 
-	if numPartitions < *requestedNumPartitions {
-		numPartitions = *requestedNumPartitions
-	}
+	// if numPartitions < *requestedNumPartitions {
+	// 	numPartitions = *requestedNumPartitions
+	// }
 
 	partitions := make([]*protos.IPartition, numPartitions)
 

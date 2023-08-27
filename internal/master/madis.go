@@ -6,7 +6,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type Mafream struct {
@@ -22,19 +24,16 @@ func NewDataFrame(c *Context, columns []string) *Mafream {
 	}
 }
 
-func (w *Mafream) Show() *Mafream {
-	actions := []string{protos.TAKE, protos.LIMIT}
-	w.assignActions(actions)
-	return w
-}
-
-func (w *Mafream) Collect() []*protos.Row {
-	//TODO: implement map
-	return []*protos.Row{}
+func (w *Mafream) Show(count int) {
+	rowsPerPratition := int(count) / len(w.partitions)
+	intWrapper := wrapperspb.Int32(int32(rowsPerPratition))
+	intAny, _ := anypb.New(intWrapper)
+	w.assignActions([]string{protos.TAKE}, &[]*anypb.Any{intAny})
+	w.context.DoAction(w.partitions)
 }
 
 func (w *Mafream) Count() int {
-	w.assignActions([]string{protos.COUNT})
+	w.assignActions([]string{protos.COUNT}, nil)
 	results := w.context.DoAction(w.partitions)
 	gtotal := 0
 	for _, p := range results {
@@ -57,12 +56,13 @@ func (w *Mafream) Count() int {
 	return gtotal
 }
 
-func (w *Mafream) assignActions(actions []string) {
+func (w *Mafream) assignActions(actions []string, params *[]*anypb.Any) {
 	for _, partition := range w.partitions {
 		partition.Tasks = append(partition.Tasks, &protos.Task{
-			Uuid:         uuid.New().String(),
-			Instruction:  actions,
-			CreationTime: timestamppb.Now(),
+			Uuid:              uuid.New().String(),
+			Instruction:       actions,
+			InstructionParams: *params,
+			CreationTime:      timestamppb.Now(),
 		})
 	}
 }
