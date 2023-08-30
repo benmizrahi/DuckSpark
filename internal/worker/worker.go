@@ -5,13 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/golang/protobuf/proto"
-
 	"github.com/benmizrahi/gobig/internal/common"
-	"github.com/benmizrahi/gobig/internal/protos"
-	"github.com/gin-gonic/gin"
+	"github.com/benmizrahi/gobig/internal/domains"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 )
 
 type Worker struct {
@@ -21,30 +19,26 @@ type Worker struct {
 	Host        string
 	Port        int
 	Plugins     map[string]common.IPluginContract
-	Http        *gin.Engine
 }
 
-func NewWorker(host string, port int, masterPath string) *Worker {
+func NewWorker(port int, masterPath string) *Worker {
 
 	w := &Worker{
 		ID:          (uuid.New()).String(),
 		MaxParallel: 10,
 		Master:      "http://" + masterPath,
-		Http:        gin.Default(),
-		Host:        host,
 		Port:        port,
 	}
 
 	w.registerToMaster()
-	w.Http.GET("/api/v1/health", w.healthCheck)
-	w.Http.POST("/api/v1/tasks", w.tasksHandler)
-	go w.Http.Run(w.Host + ":" + strconv.Itoa(w.Port))
+
 	logrus.Println("worker " + w.ID + " is listening at " + w.Host + ":" + strconv.Itoa(w.Port))
+
 	return w
 }
 
 func (w *Worker) registerToMaster() {
-	req := &protos.RegisterReq{
+	req := &domains.RegisterReq{
 		Uuid: w.ID,
 		Http: "http://" + w.Host + ":" + strconv.Itoa(w.Port),
 	}

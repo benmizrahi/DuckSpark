@@ -8,7 +8,7 @@ import (
 
 	"github.com/benmizrahi/gobig/internal/bigfream"
 	"github.com/benmizrahi/gobig/internal/common"
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/gobig/internal/domains"
 	"github.com/benmizrahi/gobig/internal/shuffle"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
@@ -62,14 +62,14 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 	if err != nil {
 		log.Fatalln("Failed to parse register request:", err)
 	}
-	req := &protos.RegisterReq{}
+	req := &domains.RegisterReq{}
 	if err := proto.Unmarshal(buf, req); err != nil {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
 	m.context.Workers[req.Uuid] = req.Http
 
-	data := &protos.RegisterRes{
+	data := &domains.RegisterRes{
 		Ok: true,
 	}
 
@@ -99,17 +99,17 @@ func (m *Master) Load() *bigfream.Bigfream {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPartitions *int) ([]*protos.IPartition, error) {
+func (m *Master) buildParallelizePartitons(data [][]interface{}, requestedNumPartitions *int) ([]*domains.IPartition, error) {
 
 	numPartitions := m.calculatePartitons(data)
 
-	partitions := make([]*protos.IPartition, numPartitions)
+	partitions := make([]*domains.IPartition, numPartitions)
 
 	// Shuffle the data
 	for index := range data {
 		partitionIndex := index % numPartitions
 		if partitions[partitionIndex] == nil {
-			partitions[partitionIndex] = &protos.IPartition{
+			partitions[partitionIndex] = &domains.IPartition{
 				Uuid: uuid.New().String(),
 			}
 		}

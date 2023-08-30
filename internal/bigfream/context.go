@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/gobig/internal/domains"
 	"github.com/benmizrahi/gobig/internal/worker"
 	"github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"
@@ -44,7 +44,7 @@ func (c *Context) InitContext() {
 	log.Info("gobig Master, all workers are ready")
 }
 
-func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.IPartition) *protos.IPartitionResult {
+func (c *Context) sendAyncTaskToWorker(worker string, partition *domains.IPartition) *domains.IPartitionResult {
 	body, err := proto.Marshal(partition)
 	if err != nil {
 		log.Fatal("error:", err)
@@ -57,7 +57,7 @@ func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.IPartiti
 	if err != nil {
 		log.Fatal(err)
 	}
-	result := protos.IPartitionResult{}
+	result := domains.IPartitionResult{}
 	err = proto.Unmarshal(buf, &result)
 	if err != nil {
 		log.Fatal(err)
@@ -66,11 +66,11 @@ func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.IPartiti
 	return &result
 }
 
-func (c *Context) DoAction(plan []*protos.IPartition) []*protos.IPartitionResult {
+func (c *Context) DoAction(plan []*domains.IPartition) []*domains.IPartitionResult {
 	//TODO publish actions to workers
 	var wg sync.WaitGroup
 
-	allPartitionResults := []*protos.IPartitionResult{}
+	allPartitionResults := []*domains.IPartitionResult{}
 	keys := reflect.ValueOf(c.Workers).MapKeys()
 	for index, partition := range plan {
 		wg.Add(1)
@@ -89,7 +89,7 @@ func (c *Context) DoAction(plan []*protos.IPartition) []*protos.IPartitionResult
 func (c *Context) handleWorkers(minWorkers int, isLocal bool, masterPath string) {
 	if isLocal {
 		for i := 0; i < minWorkers; i++ {
-			worker.NewWorker("localhost", 8080+i, masterPath)
+			worker.StartWorker(8080+i, masterPath)
 		}
 	} else {
 		//TODO: implement GKE based orchstrations

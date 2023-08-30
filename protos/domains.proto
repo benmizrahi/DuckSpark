@@ -1,9 +1,28 @@
 syntax = "proto3";
-option go_package = "/protos";
+option go_package = "/domains/";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 
-package protos;
+package domains;
+
+message RegisterReq {
+  string uuid = 1;
+  string http = 2;
+}
+
+message RegisterRes {
+  bool ok = 1;
+}
+
+message HCReq {
+  string uuid = 1;
+}
+
+
+message HCRes {
+    string uuid = 1;
+    google.protobuf.Timestamp time = 2;
+} 
 
 enum DataType {
     string = 0;

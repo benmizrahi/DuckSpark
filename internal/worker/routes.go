@@ -1,45 +1,41 @@
 package worker
 
 import (
-	"io"
-	"log"
-	"net/http"
+	"context"
 
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/gobig/internal/domains"
 	"github.com/benmizrahi/gobig/internal/worker/buildins"
-	"github.com/gin-gonic/gin"
-	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (w *Worker) healthCheck(c *gin.Context) {
-	res := &protos.HCRes{
+type RouteWorkerAPIServer struct{}
+
+// Health implements WorkerAPIServer.
+func (*RouteWorkerAPIServer) Health(context.Context, *Empty) (*domains.HCRes, error) {
+	res := &domains.HCRes{
 		Uuid: uuid.New().String(),
 		Time: timestamppb.Now(),
 	}
-	c.ProtoBuf(http.StatusOK, res)
+	return res, nil
 }
 
-func (w *Worker) tasksHandler(c *gin.Context) {
-	buf, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		log.Fatalln("Failed to parse register request:", err)
+// TasksHandler implements WorkerAPIServer.
+func (*RouteWorkerAPIServer) TasksHandler(partition *domains.IPartition, s WorkerAPI_TasksHandlerServer) error {
+	res := &domains.IPartitionResult{
+		TaskResults: []*domains.TaskResult{},
 	}
-
-	partition := &protos.IPartition{}
-	if err := proto.Unmarshal(buf, partition); err != nil {
-		log.Fatalln("Failed to parse register request:", err)
-	}
-
-	res := &protos.IPartitionResult{
-		TaskResults: []*protos.TaskResult{},
-	}
-
 	for _, task := range partition.Tasks {
 		res.TaskResults = buildins.MakeTaskInstruction(partition, task)
 	}
 
 	res.EndTime = timestamppb.Now()
-	c.ProtoBuf(http.StatusOK, res)
+	s.Send(res)
+
+	return nil
+}
+
+// mustEmbedUnimplementedWorkerAPIServer implements WorkerAPIServer.
+func (*RouteWorkerAPIServer) mustEmbedUnimplementedWorkerAPIServer() {
+	panic("unimplemented")
 }

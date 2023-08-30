@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/benmizrahi/gobig/internal/common"
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/gobig/internal/domains"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -20,13 +20,13 @@ type FSPlugin struct {
 }
 
 // Execute implements contract.IPluginContract (worker job)
-func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
+func (FSPlugin) Execute(task *domains.Task) *domains.TaskResult {
 
 	from := task.Instruction[1]
 	d, err := os.Open(from)
 	if err != nil {
 		logrus.Error("unable to read partition file", err)
-		return &protos.TaskResult{
+		return &domains.TaskResult{
 			Uuid:    task.Uuid,
 			Status:  false,
 			EndTime: timestamppb.Now(),
@@ -40,7 +40,7 @@ func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 	// 	log.Fatal(err)
 	// }
 
-	rows := []*protos.Row{}
+	rows := []*domains.Row{}
 	// for _, row := range data {
 
 	// d := protos.Data{
@@ -52,7 +52,7 @@ func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 	// rows = append(rows, &d)
 	// }
 
-	return &protos.TaskResult{
+	return &domains.TaskResult{
 		Uuid:    task.Uuid,
 		Status:  true,
 		Rows:    rows,
@@ -73,14 +73,14 @@ func (p FSPlugin) Configs(conf map[string]string) common.IPluginContract {
 }
 
 // Plan implements plugins.IPluginContract
-func (p FSPlugin) PlanRead() []*protos.IPartition {
+func (p FSPlugin) PlanRead() []*domains.IPartition {
 	files, err := ioutil.ReadDir(p.Path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	tasks := []*protos.Task{}
+	tasks := []*domains.Task{}
 	for _, file := range files {
-		tasks = append(tasks, &protos.Task{
+		tasks = append(tasks, &domains.Task{
 			Uuid:         uuid.New().String(),
 			Instruction:  []string{"read", p.Path + file.Name()},
 			Plugin:       p.Name(),
@@ -89,10 +89,10 @@ func (p FSPlugin) PlanRead() []*protos.IPartition {
 	}
 
 	sliced := common.ChunkSlice(tasks, p.Parallelism)
-	distribution := []*protos.IPartition{}
+	distribution := []*domains.IPartition{}
 
 	for _, tasks := range sliced {
-		distribution = append(distribution, &protos.IPartition{Tasks: tasks})
+		distribution = append(distribution, &domains.IPartition{Tasks: tasks})
 	}
 
 	return distribution

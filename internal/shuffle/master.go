@@ -1,12 +1,7 @@
 package shuffle
 
 import (
-	"io"
-	"log"
-
-	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/gin-gonic/gin"
-	"github.com/golang/protobuf/proto"
 )
 
 type MasterShuffler struct {
@@ -26,13 +21,13 @@ func (m *MasterShuffler) Orginize() error {
 }
 
 func (m *MasterShuffler) track(c *gin.Context) {
-	buf, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		log.Fatalln("Failed to parse register request:", err)
-	}
-	req := &protos.TrackReq{}
-	if err := proto.Unmarshal(buf, req); err != nil {
-		log.Fatalln("Failed to parse register request:", err)
-	}
-	m.state[req.Worker] = req.Partitions
+	// buf, err := io.ReadAll(c.Request.Body)
+	// if err != nil {
+	// 	log.Fatalln("Failed to parse register request:", err)
+	// }
+	// req := &domains.TrackReq{}
+	// if err := proto.Unmarshal(buf, req); err != nil {
+	// 	log.Fatalln("Failed to parse register request:", err)
+	// }
+	// m.state[req.Worker] = req.Partitions
 }

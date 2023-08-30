@@ -1,9 +1,9 @@
 package bigfream
 
-import "github.com/benmizrahi/gobig/internal/protos"
+import "github.com/benmizrahi/gobig/internal/domains"
 
 type Column struct {
-	Type protos.DataType
+	Type domains.DataType
 	Name string
 }
 

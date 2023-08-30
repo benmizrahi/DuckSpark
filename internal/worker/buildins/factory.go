@@ -1,18 +1,14 @@
 package buildins
 
 import (
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/gobig/internal/domains"
 )
 
-func MakeTaskInstruction(partition *protos.IPartition, t *protos.Task) []*protos.TaskResult {
-	res := []*protos.TaskResult{}
+func MakeTaskInstruction(partition *domains.IPartition, t *domains.Task) []*domains.TaskResult {
+	res := []*domains.TaskResult{}
 	for _, instruction := range t.Instruction {
 		switch instruction {
-		case protos.COUNT:
-			// res = append(res, Count(t.Uuid, partition.Rows, t.InstructionParams[index]))
-		case protos.TAKE:
-			// res = append(res, Take(t.Uuid, partition.Rows, t.InstructionParams[index]))
-			continue
+		case domains.DataType_string.String():
 		}
 	}
 	return res

@@ -1,0 +1,14 @@
+syntax = "proto3";
+option go_package = "/worker";
+import "protos/domains.proto";
+
+package worker;
+
+message Empty {}
+
+service WorkerAPI {
+
+    rpc TasksHandler(domains.IPartition) returns (stream domains.IPartitionResult);
+    rpc Health(Empty) returns (domains.HCRes) {};
+
+}

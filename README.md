@@ -26,7 +26,7 @@ Simplified API: It provides a simple and intuitive API to facilitate the develop
 
 ##  Building GoBig 
 
-```protoc --go_out=. protos/*.proto```
+```protoc --go_out=. protos/*.proto --go-grpc_out=. ```
 
 
 ## Contributing
