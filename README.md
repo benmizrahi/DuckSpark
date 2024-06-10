@@ -26,6 +26,10 @@ Simplified API: It provides a simple and intuitive API to facilitate the develop
 
 ##  Building GoBig 
 
+``` apt install -y protobuf-compiler ```
+
+``` go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28 ```
+
 ```protoc --go_out=. protos/*.proto```
 
 

@@ -6,7 +6,7 @@ type IPluginContract interface {
 	//Plugin Name
 	Name() string
 	//Master Read planning
-	PlanRead() []*protos.IPartition
+	PlanRead() []*protos.Task
 	//set configs
 	Configs(map[string]string) IPluginContract
 	//runtime

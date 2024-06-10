@@ -4,9 +4,10 @@ import "google/protobuf/timestamp.proto";
 package protos;
 
 
-message IPartition {
+message TasksPlan {
     string uuid = 1;
     repeated Task Tasks = 2;
+    google.protobuf.Timestamp endTime = 4;
 }
 
 message Task {
@@ -14,13 +15,6 @@ message Task {
     string plugin = 2;
     repeated string instactions = 3;
     google.protobuf.Timestamp creationTime = 4;
-}
-
-  
-message IPartitionResult {
-    string uuid = 1;
-    repeated TaskResult taskResults = 2;
-    google.protobuf.Timestamp endTime = 3;
 }
 
   

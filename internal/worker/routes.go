@@ -27,23 +27,17 @@ func (w *Worker) tasksHandler(c *gin.Context) {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	req := &protos.IPartition{}
-	if err := proto.Unmarshal(buf, req); err != nil {
+	plan := &protos.TasksPlan{}
+	if err := proto.Unmarshal(buf, plan); err != nil {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	res := &protos.IPartitionResult{
-		TaskResults: []*protos.TaskResult{},
-	}
-
-	for _, task := range req.Tasks {
+	res := []*protos.TaskResult{}
+	for _, task := range plan.Tasks {
 		if task.Plugin != "" {
-			res.TaskResults = append(res.TaskResults, w.Plugins[task.Plugin].Execute(task))
+			res = append(res, w.Plugins[task.Plugin].Execute(task))
 		}
-
-		res.TaskResults = append(res.TaskResults, buildins.MakeInstactions(task))
+		res = append(res, buildins.MakeInstactions(task))
 	}
-
-	res.EndTime = timestamppb.Now()
 	c.ProtoBuf(http.StatusOK, res)
 }

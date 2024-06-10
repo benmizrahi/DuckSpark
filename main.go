@@ -5,6 +5,7 @@ import (
 
 	"github.com/benmizrahi/gobig/internal/common"
 	"github.com/benmizrahi/gobig/internal/master"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,8 +30,8 @@ func main() {
 		{"BEST"},
 	}
 	// word count example
-	master.
+	logrus.Info(master.
 		NewMaster(*isLocal, *host, *port, 2).
 		Parallelize(data, common.Options{}).
-		Count()
+		Count())
 }

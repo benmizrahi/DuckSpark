@@ -45,7 +45,7 @@ func (c *Context) InitContext() {
 
 }
 
-func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.IPartition) *protos.IPartitionResult {
+func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.Task) *protos.TaskResult {
 	body, err := proto.Marshal(partition)
 	if err != nil {
 		log.Fatal("error:", err)
@@ -58,7 +58,7 @@ func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.IPartiti
 	if err != nil {
 		log.Fatal(err)
 	}
-	result := protos.IPartitionResult{}
+	result := protos.TaskResult{}
 	err = proto.Unmarshal(buf, &result)
 	if err != nil {
 		log.Fatal(err)
@@ -67,11 +67,11 @@ func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.IPartiti
 	return &result
 }
 
-func (c *Context) DoAction(plan []*protos.IPartition) []*protos.IPartitionResult {
+func (c *Context) DoAction(plan []*protos.Task) []*protos.TaskResult {
 	//TODO publish actions to workers
 	var wg sync.WaitGroup
 
-	allPartitionResults := []*protos.IPartitionResult{}
+	allPartitionResults := []*protos.TaskResult{}
 	keys := reflect.ValueOf(c.Workers).MapKeys()
 	for index, partition := range plan {
 		wg.Add(1)
