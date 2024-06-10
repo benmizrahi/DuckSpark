@@ -8,9 +8,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/benmizrahi/gobig/internal/common"
 	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/benmizrahi/gobig/internal/worker"
 	"github.com/golang/protobuf/proto"
+	dag "github.com/heimdalr/dag"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -67,24 +69,26 @@ func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.Task) *p
 	return &result
 }
 
-func (c *Context) DoAction(plan []*protos.Task) []*protos.TaskResult {
+func (c *Context) ExecuteDAG(start string, last string, dag *dag.DAG) []*protos.TaskResult {
 	//TODO publish actions to workers
 	var wg sync.WaitGroup
+	vertexStart, _ := dag.GetVertex(start)
+	maplan := vertexStart.(*common.Maplan)
 
-	allPartitionResults := []*protos.TaskResult{}
+	allTasksResults := []*protos.TaskResult{}
 	keys := reflect.ValueOf(c.Workers).MapKeys()
-	for index, partition := range plan {
+	for index, task := range maplan.Tasks {
 		wg.Add(1)
 		num := index % len(keys)
 		worker := c.Workers[keys[num].String()]
 		go func() {
 			defer wg.Done()
-			allPartitionResults = append(allPartitionResults, c.sendAyncTaskToWorker(worker, partition))
+			allTasksResults = append(allTasksResults, c.sendAyncTaskToWorker(worker, task))
 		}()
 	}
 	wg.Wait()
 
-	return allPartitionResults
+	return allTasksResults
 }
 
 func (c *Context) handleWorkers(minWorkers int, isLocal bool, masterPath string) {

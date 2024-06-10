@@ -39,7 +39,7 @@ func NewWorker(host string, port int, masterPath string) *Worker {
 	w.registerToMaster()
 
 	w.Http.GET("/api/v1/health", w.healthCheck)
-	w.Http.POST("/api/v1/tasks", w.tasksHandler)
+	w.Http.POST("/api/v1/tasks", w.taskHandler)
 
 	go w.Http.Run(w.Host + ":" + strconv.Itoa(w.Port))
 

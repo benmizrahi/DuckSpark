@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/benmizrahi/gobig/internal/common"
+	"github.com/benmizrahi/gobig/internal/plugins"
 	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
@@ -71,12 +72,9 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 	c.ProtoBuf(http.StatusOK, data)
 }
 
-func (m *Master) Parallelize(data [][]string, option common.Options) *Mafream {
-	mf := NewDataFrame(m.context, []string{}, 1)
-	return mf
-}
-
-func (m *Master) Load() *Mafream {
-	mf := NewDataFrame(m.context, []string{}, 1)
+func (m *Master) Load(path string) *Mafream {
+	//TODO: analyze the plugin needed here
+	t := plugins.GetPlugin("fsplugin").Plan(path)
+	mf := NewDataFrame(m.context, &common.Maplan{Action: protos.LOAD, Tasks: t})
 	return mf
 }

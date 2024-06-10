@@ -4,12 +4,6 @@ import "google/protobuf/timestamp.proto";
 package protos;
 
 
-message TasksPlan {
-    string uuid = 1;
-    repeated Task Tasks = 2;
-    google.protobuf.Timestamp endTime = 4;
-}
-
 message Task {
     string uuid = 1;
     string plugin = 2;

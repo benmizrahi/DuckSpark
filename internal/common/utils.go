@@ -1,6 +1,8 @@
 package common
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func ChunkSlice[T interface{}](slice []T, chunkSize int) [][]T {
 	var chunks [][]T

@@ -74,8 +74,10 @@ func (p FSPlugin) Configs(conf map[string]string) common.IPluginContract {
 }
 
 // Plan implements plugins.IPluginContract
-func (p FSPlugin) PlanRead() []*protos.Task {
-	files, err := ioutil.ReadDir(p.Path)
+func (p FSPlugin) Plan(args ...interface{}) []*protos.Task {
+
+	path := args[len(args)-1].(string)
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,7 +87,7 @@ func (p FSPlugin) PlanRead() []*protos.Task {
 	for _, file := range files {
 		distribution = append(distribution, &protos.Task{
 			Uuid:         uuid.New().String(),
-			Instactions:  []string{"read", p.Path + file.Name()},
+			Instactions:  []string{path + file.Name()},
 			Plugin:       p.Name(),
 			CreationTime: timestamppb.Now(),
 		})

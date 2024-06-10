@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/benmizrahi/gobig/internal/protos"
-	"github.com/benmizrahi/gobig/internal/worker/buildins"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
@@ -21,23 +20,16 @@ func (w *Worker) healthCheck(c *gin.Context) {
 	c.ProtoBuf(http.StatusOK, res)
 }
 
-func (w *Worker) tasksHandler(c *gin.Context) {
+func (w *Worker) taskHandler(c *gin.Context) {
 	buf, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	plan := &protos.TasksPlan{}
-	if err := proto.Unmarshal(buf, plan); err != nil {
+	task := &protos.Task{}
+	if err := proto.Unmarshal(buf, task); err != nil {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	res := []*protos.TaskResult{}
-	for _, task := range plan.Tasks {
-		if task.Plugin != "" {
-			res = append(res, w.Plugins[task.Plugin].Execute(task))
-		}
-		res = append(res, buildins.MakeInstactions(task))
-	}
-	c.ProtoBuf(http.StatusOK, res)
+	c.ProtoBuf(http.StatusOK, w.Plugins[task.Plugin].Execute(task))
 }
