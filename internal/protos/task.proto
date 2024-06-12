@@ -9,14 +9,16 @@ message Task {
     string plugin = 2;
     repeated string instactions = 3;
     google.protobuf.Timestamp creationTime = 4;
+    string dagId = 5;
 }
 
   
 message TaskResult {
     string uuid = 1;
     bool status = 2;
-    repeated DataRow data = 3;
-    google.protobuf.Timestamp endTime = 4;
+    bool dataflow = 3;
+    repeated DataRow data = 4;
+    google.protobuf.Timestamp endTime = 5;
 }
 
 message DataRow {

@@ -3,25 +3,19 @@ package master
 import (
 	"github.com/benmizrahi/gobig/internal/common"
 	"github.com/benmizrahi/gobig/internal/protos"
-	dag "github.com/heimdalr/dag"
+	"github.com/google/uuid"
 	_ "github.com/samber/lo"
 )
 
 type Mafream struct {
-	dag     *dag.DAG
-	root    string
+	link    *common.LinkedList[common.Maplan]
 	last    string
 	context *Context
 }
 
 func NewDataFrame(c *Context, preplan *common.Maplan) *Mafream {
-
-	dag := dag.NewDAG()
-	root, _ := dag.AddVertex(preplan)
-
 	return &Mafream{
-		dag:     dag,
-		root:    root,
+		link:    common.NewLinkedList[common.Maplan](*preplan),
 		context: c,
 	}
 }
@@ -35,10 +29,8 @@ func (w *Mafream) Count() int {
 	countPlan := common.Maplan{
 		Action: protos.COUNT,
 	}
-	lastAction, _ := w.dag.AddVertex(&countPlan)
-	w.dag.AddEdge(w.root, lastAction)
-
-	_ = w.context.ExecuteDAG(w.root, lastAction, w.dag)
+	w.link.Push(countPlan)
+	_ = w.context.ExecuteDAG(w.link, uuid.NewString())
 
 	// w.assignActions([]string{protos.COUNT})
 	// results := w.context.DoAction(w.plan)

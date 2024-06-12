@@ -23,7 +23,7 @@ type FSPlugin struct {
 // Execute implements contract.IPluginContract (worker job)
 func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 
-	from := task.Instactions[1]
+	from := task.Instactions[0]
 	d, err := os.Open(from)
 	if err != nil {
 		logrus.Error("unable to read partition file", err)
@@ -54,10 +54,11 @@ func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 	}
 
 	return &protos.TaskResult{
-		Uuid:    task.Uuid,
-		Status:  true,
-		Data:    rows,
-		EndTime: timestamppb.Now(),
+		Uuid:     task.Uuid,
+		Status:   true,
+		Dataflow: false,
+		Data:     rows,
+		EndTime:  timestamppb.Now(),
 	}
 }
 

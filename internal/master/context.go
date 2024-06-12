@@ -12,7 +12,6 @@ import (
 	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/benmizrahi/gobig/internal/worker"
 	"github.com/golang/protobuf/proto"
-	dag "github.com/heimdalr/dag"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -69,25 +68,31 @@ func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.Task) *p
 	return &result
 }
 
-func (c *Context) ExecuteDAG(start string, last string, dag *dag.DAG) []*protos.TaskResult {
+func (c *Context) ExecuteDAG(list *common.LinkedList[common.Maplan], actionId string) []*protos.TaskResult {
+
 	//TODO publish actions to workers
 	var wg sync.WaitGroup
-	vertexStart, _ := dag.GetVertex(start)
-	maplan := vertexStart.(*common.Maplan)
-
 	allTasksResults := []*protos.TaskResult{}
-	keys := reflect.ValueOf(c.Workers).MapKeys()
-	for index, task := range maplan.Tasks {
-		wg.Add(1)
-		num := index % len(keys)
-		worker := c.Workers[keys[num].String()]
-		go func() {
-			defer wg.Done()
-			allTasksResults = append(allTasksResults, c.sendAyncTaskToWorker(worker, task))
-		}()
-	}
-	wg.Wait()
 
+	action, exits := list.Pop()
+	for {
+		if !exits {
+			break
+		}
+		keys := reflect.ValueOf(c.Workers).MapKeys()
+		for index, task := range action.Tasks {
+			task.DagId = actionId
+			wg.Add(1)
+			num := index % len(keys)
+			worker := c.Workers[keys[num].String()]
+			go func() {
+				defer wg.Done()
+				allTasksResults = append(allTasksResults, c.sendAyncTaskToWorker(worker, task))
+			}()
+		}
+		wg.Wait()
+		action, exits = list.Pop()
+	}
 	return allTasksResults
 }
 

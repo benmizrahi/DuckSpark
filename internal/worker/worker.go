@@ -8,7 +8,6 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/benmizrahi/gobig/internal/common"
 	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -21,7 +20,6 @@ type Worker struct {
 	Master      string
 	Host        string
 	Port        int
-	Plugins     map[string]common.IPluginContract
 	Http        *gin.Engine
 }
 

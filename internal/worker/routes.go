@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/benmizrahi/gobig/internal/plugins"
 	"github.com/benmizrahi/gobig/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -31,5 +32,12 @@ func (w *Worker) taskHandler(c *gin.Context) {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	c.ProtoBuf(http.StatusOK, w.Plugins[task.Plugin].Execute(task))
+	tResult := plugins.GetPlugin(task.Plugin).Execute(task)
+
+	if !tResult.Dataflow {
+		CacheIt(task.DagId, tResult.Data)
+		tResult.Data = nil
+	}
+
+	c.ProtoBuf(http.StatusOK, tResult)
 }
