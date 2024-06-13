@@ -1,10 +1,12 @@
 package master
 
 import (
-	"github.com/benmizrahi/gobig/internal/common"
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/duckspark/internal/common"
+	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/google/uuid"
 	_ "github.com/samber/lo"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Mafream struct {
@@ -15,7 +17,7 @@ type Mafream struct {
 
 func NewDataFrame(c *Context, preplan *common.Maplan) *Mafream {
 	return &Mafream{
-		link:    common.NewLinkedList[common.Maplan](*preplan),
+		link:    common.NewLinkedList(*preplan),
 		context: c,
 	}
 }
@@ -26,11 +28,23 @@ func (w *Mafream) Show() *Mafream {
 
 func (w *Mafream) Count() int {
 
-	countPlan := common.Maplan{
-		Action: protos.COUNT,
+	logrus.Info("trigger action Count")
+
+	count_task := &protos.Task{
+		Uuid:         uuid.New().String(),
+		Instactions:  []string{"COUNT"},
+		CreationTime: timestamppb.Now(),
 	}
+
+	countPlan := common.Maplan{
+		Action: common.COUNT,
+		Tasks: []*protos.Task{
+			count_task,
+		},
+	}
+
 	w.link.Push(countPlan)
-	_ = w.context.ExecuteDAG(w.link, uuid.NewString())
+	_ = w.context.ExecuteAction(uuid.NewString(), w.link)
 
 	// w.assignActions([]string{protos.COUNT})
 	// results := w.context.DoAction(w.plan)

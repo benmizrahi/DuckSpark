@@ -1,6 +1,6 @@
 package common
 
-import "github.com/benmizrahi/gobig/internal/protos"
+import "github.com/benmizrahi/duckspark/internal/protos"
 
 type IPluginContract interface {
 	//Plugin Name

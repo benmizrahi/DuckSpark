@@ -1,4 +1,4 @@
-module github.com/benmizrahi/gobig
+module github.com/benmizrahi/duckspark
 
 go 1.21
 

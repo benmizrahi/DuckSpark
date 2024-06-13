@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/benmizrahi/gobig/internal/plugins"
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/duckspark/internal/plugins"
+	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"

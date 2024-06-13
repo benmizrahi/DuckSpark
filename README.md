@@ -1,9 +1,9 @@
 
-## GoBig.io - go bigger ![](https://github.githubassets.com/images/icons/emoji/unicode/1f680.png?v2)
+## duckspark.io - go bigger ![](https://github.githubassets.com/images/icons/emoji/unicode/1f680.png?v2)
 
-<https://gobig.io/>  
+<https://duckspark.io/>  
 
-GoBig is library for enabling distributed processing of large data sets. It allows you to efficiently process data in parallel across multiple machines or nodes, enabling faster and scalable data processing.
+duckspark is library for enabling distributed processing of large data sets. It allows you to efficiently process data in parallel across multiple machines or nodes, enabling faster and scalable data processing.
 
 [![](https://skillicons.dev/icons?i=go)](https://skillicons.dev) 
 
@@ -24,7 +24,7 @@ Simplified API: It provides a simple and intuitive API to facilitate the develop
 
 ----
 
-##  Building GoBig 
+##  Building duckspark 
 
 ``` apt install -y protobuf-compiler ```
 

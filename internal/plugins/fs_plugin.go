@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/benmizrahi/gobig/internal/common"
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/duckspark/internal/common"
+	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/timestamppb"

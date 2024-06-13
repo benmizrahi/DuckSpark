@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/benmizrahi/gobig/internal/common"
-	"github.com/benmizrahi/gobig/internal/protos"
-	"github.com/benmizrahi/gobig/internal/worker"
+	"github.com/benmizrahi/duckspark/internal/common"
+	"github.com/benmizrahi/duckspark/internal/protos"
+	"github.com/benmizrahi/duckspark/internal/worker"
 	"github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"
 )
@@ -39,10 +39,10 @@ func (c *Context) InitContext() {
 	c.handleWorkers(c.minWorkers, c.IsLocal, c.masterPath)
 
 	for len(c.Workers) != c.minWorkers {
-		log.Info("gobig Master, wating for %d workers to register..", c.minWorkers)
+		log.Info("duckspark Master, wating for %d workers to register..", c.minWorkers)
 		time.Sleep(1 * time.Second)
 	}
-	log.Info("gobig Master, all workers are ready")
+	log.Info("duckspark Master, all workers are ready")
 
 }
 
@@ -68,31 +68,37 @@ func (c *Context) sendAyncTaskToWorker(worker string, partition *protos.Task) *p
 	return &result
 }
 
-func (c *Context) ExecuteDAG(list *common.LinkedList[common.Maplan], actionId string) []*protos.TaskResult {
+func (c *Context) ExecuteAction(actionId string, list *common.LinkedList[common.Maplan]) []*protos.TaskResult {
 
-	//TODO publish actions to workers
-	var wg sync.WaitGroup
-	allTasksResults := []*protos.TaskResult{}
-
-	action, exits := list.Pop()
+	tasksResults := []*protos.TaskResult{}
+	maplan, exits := list.Pop()
 	for {
 		if !exits {
 			break
 		}
-		keys := reflect.ValueOf(c.Workers).MapKeys()
-		for index, task := range action.Tasks {
-			task.DagId = actionId
-			wg.Add(1)
-			num := index % len(keys)
-			worker := c.Workers[keys[num].String()]
-			go func() {
-				defer wg.Done()
-				allTasksResults = append(allTasksResults, c.sendAyncTaskToWorker(worker, task))
-			}()
-		}
-		wg.Wait()
-		action, exits = list.Pop()
+		tasksResults = c.distributeTasksToWorkers(actionId, maplan)
+		maplan, exits = list.Pop()
 	}
+
+	return tasksResults
+}
+
+func (c *Context) distributeTasksToWorkers(actionId string, maplan common.Maplan) []*protos.TaskResult {
+	allTasksResults := []*protos.TaskResult{}
+	var wg sync.WaitGroup
+
+	keys := reflect.ValueOf(c.Workers).MapKeys()
+	for index, task := range maplan.Tasks {
+		task.DagId = actionId
+		wg.Add(1)
+		num := index % len(keys)
+		worker := c.Workers[keys[num].String()]
+		go func() {
+			defer wg.Done()
+			allTasksResults = append(allTasksResults, c.sendAyncTaskToWorker(worker, task))
+		}()
+	}
+
 	return allTasksResults
 }
 

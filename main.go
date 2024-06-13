@@ -7,7 +7,7 @@ func main() {
 	// isLocal := flag.Bool("isLocal", true, "# Run locally with processes K8S/Local")
 	// flag.Parse()
 
-	// log.Info("gobig Status: Starting")
+	// log.Info("duckspark Status: Starting")
 	// log.Info("******************")
 	// log.Info("Status: Ready!")
 	// log.Info("******************")
