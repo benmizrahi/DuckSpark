@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/benmizrahi/gobig/internal/protos"
-	"github.com/benmizrahi/gobig/internal/worker/buildins"
+	"github.com/benmizrahi/duckspark/internal/plugins"
+	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
@@ -21,29 +21,23 @@ func (w *Worker) healthCheck(c *gin.Context) {
 	c.ProtoBuf(http.StatusOK, res)
 }
 
-func (w *Worker) tasksHandler(c *gin.Context) {
+func (w *Worker) taskHandler(c *gin.Context) {
 	buf, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	req := &protos.IPartition{}
-	if err := proto.Unmarshal(buf, req); err != nil {
+	task := &protos.Task{}
+	if err := proto.Unmarshal(buf, task); err != nil {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	res := &protos.IPartitionResult{
-		TaskResults: []*protos.TaskResult{},
+	tResult := plugins.GetPlugin(task.Plugin).Execute(task)
+
+	if !tResult.Dataflow {
+		CacheIt(task.DagId, tResult.Data)
+		tResult.Data = nil
 	}
 
-	for _, task := range req.Tasks {
-		if task.Plugin != "" {
-			res.TaskResults = append(res.TaskResults, w.Plugins[task.Plugin].Execute(task))
-		}
-
-		res.TaskResults = append(res.TaskResults, buildins.MakeInstactions(task))
-	}
-
-	res.EndTime = timestamppb.Now()
-	c.ProtoBuf(http.StatusOK, res)
+	c.ProtoBuf(http.StatusOK, tResult)
 }

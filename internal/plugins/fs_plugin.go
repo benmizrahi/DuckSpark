@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/benmizrahi/gobig/internal/common"
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/duckspark/internal/common"
+	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -23,7 +23,7 @@ type FSPlugin struct {
 // Execute implements contract.IPluginContract (worker job)
 func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 
-	from := task.Instactions[1]
+	from := task.Instactions[0]
 	d, err := os.Open(from)
 	if err != nil {
 		logrus.Error("unable to read partition file", err)
@@ -54,10 +54,11 @@ func (FSPlugin) Execute(task *protos.Task) *protos.TaskResult {
 	}
 
 	return &protos.TaskResult{
-		Uuid:    task.Uuid,
-		Status:  true,
-		Data:    rows,
-		EndTime: timestamppb.Now(),
+		Uuid:     task.Uuid,
+		Status:   true,
+		Dataflow: false,
+		Data:     rows,
+		EndTime:  timestamppb.Now(),
 	}
 }
 
@@ -74,26 +75,23 @@ func (p FSPlugin) Configs(conf map[string]string) common.IPluginContract {
 }
 
 // Plan implements plugins.IPluginContract
-func (p FSPlugin) PlanRead() []*protos.IPartition {
-	files, err := ioutil.ReadDir(p.Path)
+func (p FSPlugin) Plan(args ...interface{}) []*protos.Task {
+
+	path := args[len(args)-1].(string)
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	tasks := []*protos.Task{}
+
+	// TODO: improve distribution
+	distribution := []*protos.Task{}
 	for _, file := range files {
-		tasks = append(tasks, &protos.Task{
+		distribution = append(distribution, &protos.Task{
 			Uuid:         uuid.New().String(),
-			Instactions:  []string{"read", p.Path + file.Name()},
+			Instactions:  []string{path + file.Name()},
 			Plugin:       p.Name(),
 			CreationTime: timestamppb.Now(),
 		})
-	}
-
-	sliced := common.ChunkSlice(tasks, p.Parallelism)
-	distribution := []*protos.IPartition{}
-
-	for _, tasks := range sliced {
-		distribution = append(distribution, &protos.IPartition{Tasks: tasks})
 	}
 
 	return distribution

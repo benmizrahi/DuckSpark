@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/benmizrahi/gobig/internal/common"
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/duckspark/internal/common"
+	"github.com/benmizrahi/duckspark/internal/plugins"
+	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
@@ -30,7 +31,7 @@ type Master struct {
 func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 	if masterInstance == nil {
 		lock.Lock()
-		log.Info("gobig Master, Creating new master instance")
+		log.Info("duckspark Master, Creating new master instance")
 		m := &Master{
 			MasterPath: host + ":" + strconv.Itoa(port),
 			Http:       gin.New(),
@@ -40,7 +41,7 @@ func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 
 		m.Http.POST("/api/register", m.RegisterHandler)
 		go m.Http.Run(m.MasterPath)
-		log.Info("gobig Master, master is listening on ", m.MasterPath)
+		log.Info("duckspark Master, master is listening on ", m.MasterPath)
 
 		m.context = NewContext(isLocal, minWorkers, m.MasterPath)
 
@@ -71,12 +72,9 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 	c.ProtoBuf(http.StatusOK, data)
 }
 
-func (m *Master) Parallelize(data [][]string, option common.Options) *Mafream {
-	mf := NewDataFrame(m.context, []string{}, 1)
-	return mf
-}
-
-func (m *Master) Load() *Mafream {
-	mf := NewDataFrame(m.context, []string{}, 1)
+func (m *Master) Load(path string) *Mafream {
+	//TODO: analyze the plugin needed here
+	t := plugins.GetPlugin("fsplugin").Plan(path)
+	mf := NewDataFrame(m.context, &common.Maplan{Plan: common.LOAD, Tasks: t})
 	return mf
 }

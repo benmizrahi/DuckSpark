@@ -8,8 +8,7 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/benmizrahi/gobig/internal/common"
-	"github.com/benmizrahi/gobig/internal/protos"
+	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -21,7 +20,6 @@ type Worker struct {
 	Master      string
 	Host        string
 	Port        int
-	Plugins     map[string]common.IPluginContract
 	Http        *gin.Engine
 }
 
@@ -37,9 +35,12 @@ func NewWorker(host string, port int, masterPath string) *Worker {
 	}
 
 	w.registerToMaster()
+
 	w.Http.GET("/api/v1/health", w.healthCheck)
-	w.Http.POST("/api/v1/tasks", w.tasksHandler)
+	w.Http.POST("/api/v1/tasks", w.taskHandler)
+
 	go w.Http.Run(w.Host + ":" + strconv.Itoa(w.Port))
+
 	logrus.Info("worker %s is listening at %s", w.ID, w.Host+":"+strconv.Itoa(w.Port))
 	return w
 }
