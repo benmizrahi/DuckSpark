@@ -12,27 +12,31 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"database/sql"
+	_ "github.com/marcboeker/go-duckdb"
 )
 
 type Worker struct {
 	ID          string
-	MaxParallel int
 	Master      string
 	Host        string
 	Port        int
 	Http        *gin.Engine
+	db 			*duckdb.Connector
 }
 
 func NewWorker(host string, port int, masterPath string) *Worker {
 
 	w := &Worker{
 		ID:          (uuid.New()).String(),
-		MaxParallel: 10,
 		Master:      "http://" + masterPath,
 		Http:        gin.Default(),
 		Host:        host,
-		Port:        port,
+		Port:        port
 	}
+	
+	connector, err := duckdb.NewConnector("w-"w.ID + ".db", nil)
+	w.db = connector
 
 	w.registerToMaster()
 

@@ -31,7 +31,6 @@ type Master struct {
 func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 	if masterInstance == nil {
 		lock.Lock()
-		log.Info("duckspark Master, Creating new master instance")
 		m := &Master{
 			MasterPath: host + ":" + strconv.Itoa(port),
 			Http:       gin.New(),
@@ -74,7 +73,7 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 
 func (m *Master) Load(path string) *Mafream {
 	//TODO: analyze the plugin needed here
-	t := plugins.GetPlugin("fsplugin").Plan(path)
-	mf := NewDataFrame(m.context, &common.Maplan{Plan: common.LOAD, Tasks: t})
+	tasks := plugins.GetPlugin("fsplugin").Plan(path)
+	mf := NewDataFrame(m.context, &common.Maplan{Plan: common.LOAD, Tasks: tasks})
 	return mf
 }
