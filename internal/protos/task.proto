@@ -1,4 +1,5 @@
 syntax = "proto3";
+
 option go_package = "/protos";
 import "google/protobuf/timestamp.proto";
 package protos;
@@ -7,9 +8,9 @@ package protos;
 message Task {
     string uuid = 1;
     string plugin = 2;
-    repeated string instactions = 3;
+    repeated string commands = 3;
     google.protobuf.Timestamp creationTime = 4;
-    string dagId = 5;
+    string stageId = 5;
 }
 
   

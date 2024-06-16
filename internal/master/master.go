@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/benmizrahi/duckspark/internal/common"
 	"github.com/benmizrahi/duckspark/internal/plugins"
 	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/gin-gonic/gin"
@@ -72,8 +71,7 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 }
 
 func (m *Master) Load(path string) *Mafream {
-	//TODO: analyze the plugin needed here
-	tasks := plugins.GetPlugin("fsplugin").Plan(path)
-	mf := NewDataFrame(m.context, &common.Maplan{Plan: common.LOAD, Tasks: tasks})
+	mapPlan := plugins.GetPlugin("fs_analyzer").Plan(path)
+	mf := NewDataFrame(m.context, &mapPlan)
 	return mf
 }
