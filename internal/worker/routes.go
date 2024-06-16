@@ -1,11 +1,11 @@
 package worker
 
 import (
+	"context"
 	"io"
 	"log"
 	"net/http"
 
-	"github.com/benmizrahi/duckspark/internal/plugins"
 	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -32,12 +32,20 @@ func (w *Worker) taskHandler(c *gin.Context) {
 		log.Fatalln("Failed to parse register request:", err)
 	}
 
-	tResult := plugins.GetPlugin(task.Plugin).Execute(task)
+	for _, commend := range task.Commands {
 
-	if !tResult.Dataflow {
-		CacheIt(task.DagId, tResult.Data)
-		tResult.Data = nil
+		rows, err := w.db.QueryContext(context.Background(), commend)
+		if err != nil {
+			log.Fatalln("Failed to execute commend", err)
+		}
+		rows.Close()
+		CacheIt(task.StageId, &rows)
 	}
 
-	c.ProtoBuf(http.StatusOK, tResult)
+	c.ProtoBuf(http.StatusOK, &protos.TaskResult{
+		Uuid:    task.StageId,
+		Status:  true,
+		EndTime: timestamppb.Now(),
+		Data:    []*protos.DataRow{},
+	})
 }

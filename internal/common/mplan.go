@@ -3,7 +3,7 @@ package common
 import "github.com/benmizrahi/duckspark/internal/protos"
 
 type Maplan struct {
-	Action Action
-	Plan   Planner
+	Action *string
+	Plan   *string
 	Tasks  []*protos.Task
 }

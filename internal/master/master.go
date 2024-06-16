@@ -1,12 +1,12 @@
 package master
 
 import (
+	"database/sql"
 	"io"
 	"net/http"
 	"strconv"
 	"sync"
 
-	"github.com/benmizrahi/duckspark/internal/common"
 	"github.com/benmizrahi/duckspark/internal/plugins"
 	"github.com/benmizrahi/duckspark/internal/protos"
 	"github.com/gin-gonic/gin"
@@ -23,29 +23,35 @@ var lock = &sync.Mutex{}
 var masterInstance *Master
 
 type Master struct {
-	MasterPath string
-	context    *Context
-	Http       *gin.Engine
+	rootPath string
+	context  *Context
+	http     *gin.Engine
+	db       *sql.DB
 }
 
 func NewMaster(isLocal bool, host string, port int, minWorkers int) *Master {
 	if masterInstance == nil {
 		lock.Lock()
-		log.Info("duckspark Master, Creating new master instance")
 		m := &Master{
-			MasterPath: host + ":" + strconv.Itoa(port),
-			Http:       gin.New(),
+			rootPath: host + ":" + strconv.Itoa(port),
+			http:     gin.New(),
 		}
 
-		m.Http.Use(ginlogrus.Logger(logrus.New()), gin.Recovery())
+		m.http.Use(ginlogrus.Logger(logrus.New()), gin.Recovery())
 
-		m.Http.POST("/api/register", m.RegisterHandler)
-		go m.Http.Run(m.MasterPath)
-		log.Info("duckspark Master, master is listening on ", m.MasterPath)
+		m.http.POST("/api/register", m.RegisterHandler)
+		go m.http.Run(m.rootPath)
+		log.Info("duckspark Master, master is listening on ", m.rootPath)
 
-		m.context = NewContext(isLocal, minWorkers, m.MasterPath)
+		m.context = NewContext(isLocal, minWorkers, m.rootPath)
 
 		m.context.InitContext()
+
+		connector, err := sql.Open("duckdb", "/tmp/m.db")
+		if err != nil {
+			logrus.Fatal("Unable to start worker err:", err)
+		}
+		m.db = connector
 
 		lock.Unlock()
 		return m
@@ -73,8 +79,13 @@ func (m *Master) RegisterHandler(c *gin.Context) {
 }
 
 func (m *Master) Load(path string) *Mafream {
-	//TODO: analyze the plugin needed here
-	t := plugins.GetPlugin("fsplugin").Plan(path)
-	mf := NewDataFrame(m.context, &common.Maplan{Plan: common.LOAD, Tasks: t})
+	mapPlan := plugins.GetPlugin("fs_analyzer").Plan(path)
+	mf := NewDataFrame(m.context, &mapPlan)
 	return mf
+}
+
+func (m *Master) SQL(query string) *Mafream {
+	mapPlan := plugins.GetPlugin("duckdb_plugin").Plan(query, m.db)
+	mf := NewDataFrame(m.context, &mapPlan)
+	return mf.Show()
 }

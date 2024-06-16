@@ -1,15 +1,15 @@
 package plugins
 
-import "github.com/benmizrahi/duckspark/internal/common"
-
-var pluginRegistry = map[string]common.IPluginContract{}
+var pluginRegistry = map[string]IPluginContract{}
 
 func init() {
 	// add the plugin initializer to the registry
 	fs := NewFSPlugin()
+	duckdb := NewDuckPlugin()
 	pluginRegistry[fs.Name()] = fs
+	pluginRegistry[duckdb.Name()] = duckdb
 }
 
-func GetPlugin(name string) common.IPluginContract {
+func GetPlugin(name string) IPluginContract {
 	return pluginRegistry[name]
 }

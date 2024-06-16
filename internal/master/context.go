@@ -89,7 +89,7 @@ func (c *Context) distributeTasksToWorkers(actionId string, maplan common.Maplan
 
 	keys := reflect.ValueOf(c.Workers).MapKeys()
 	for index, task := range maplan.Tasks {
-		task.DagId = actionId
+		task.StageId = actionId
 		wg.Add(1)
 		num := index % len(keys)
 		worker := c.Workers[keys[num].String()]
@@ -98,6 +98,8 @@ func (c *Context) distributeTasksToWorkers(actionId string, maplan common.Maplan
 			allTasksResults = append(allTasksResults, c.sendAyncTaskToWorker(worker, task))
 		}()
 	}
+
+	wg.Wait()
 
 	return allTasksResults
 }

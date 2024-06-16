@@ -23,32 +23,26 @@ func NewDataFrame(c *Context, preplan *common.Maplan) *Mafream {
 }
 
 func (w *Mafream) Show() *Mafream {
+	logrus.Info("trigger action SHOW")
+
 	return w
 }
 
 func (w *Mafream) Count() int {
 
 	logrus.Info("trigger action Count")
-
-	count_task := &protos.Task{
-		Uuid:         uuid.New().String(),
-		Instactions:  []string{"COUNT"},
-		CreationTime: timestamppb.Now(),
-	}
-
+	action := "COUNT"
 	countPlan := common.Maplan{
-		Action: common.COUNT,
-		Tasks: []*protos.Task{
-			count_task,
+		Action: &action,
+		Tasks: []*protos.Task{{
+			Uuid:         uuid.New().String(),
+			Commands:     []string{" COUNT"},
+			CreationTime: timestamppb.Now()},
 		},
 	}
 
 	w.link.Push(countPlan)
 	_ = w.context.ExecuteAction(uuid.NewString(), w.link)
-
-	// w.assignActions([]string{protos.COUNT})
-	// results := w.context.DoAction(w.plan)
-	// return lo.Sum(handleTasksResults[int](actions, results))
 
 	return 0
 }
