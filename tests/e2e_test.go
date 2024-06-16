@@ -6,10 +6,9 @@ import (
 	"github.com/benmizrahi/duckspark/internal/master"
 )
 
-func TestCountAction(t *testing.T) {
+func TestSQLAction(t *testing.T) {
 
 	master.
 		NewMaster(true, "localhost", 9999, 2).
-		Load("./resources/").
-		Count()
+		SQL("SELECT * FROM './resources/*.csv'")
 }

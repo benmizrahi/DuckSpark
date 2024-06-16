@@ -23,6 +23,8 @@ func NewDataFrame(c *Context, preplan *common.Maplan) *Mafream {
 }
 
 func (w *Mafream) Show() *Mafream {
+	logrus.Info("trigger action SHOW")
+
 	return w
 }
 

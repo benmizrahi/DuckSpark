@@ -56,7 +56,7 @@ func (p FSPlugin) Plan(args ...interface{}) common.Maplan {
 
 // Name implements plugins.IPluginContract
 func (p FSPlugin) Name() string {
-	return "fs_analyzer"
+	return "fs_analyzer_plugin"
 }
 
 // Name must be New + struct name
